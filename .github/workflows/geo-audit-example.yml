@@ -1,13 +1,12 @@
 # Example / dogfooding workflow for the GEO Optimizer GitHub Action.
 # Runs a GEO audit on the AgencyPilot site every Monday and on push to main.
 
-name: GEO Audit (dogfooding)
+name: GEO Audit
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
   schedule:
-    - cron: "0 6 * * 1" # every Monday at 6 UTC
+    - cron: "0 8 * * *" # every day at 06:00 UTC
 
 permissions:
   contents: read
@@ -39,15 +38,15 @@ jobs:
           echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
           echo "| Score | **${{ steps.geo.outputs.score }}**/100 |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Band | \`${{ steps.geo.outputs.band }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Report | \`${{ steps.geo.outputs.report }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Report | \`${{ steps.geo.outputs.report-path }}\` |" >> "$GITHUB_STEP_SUMMARY"
 
       # Upload report as artifact (skip if audit produced no report)
       - name: Upload report
-        if: steps.geo.outputs.report != ''
+        if: steps.geo.outputs.report-path != ''
         uses: actions/upload-artifact@v7
         with:
           name: geo-report
-          path: ${{ steps.geo.outputs.report }}
+          path: ${{ steps.geo.outputs.report-path }}
           retention-days: 30
 
   # SARIF example — visible in GitHub Security tab
@@ -61,5 +60,5 @@ jobs:
       - name: Run GEO Audit (SARIF)
         uses: ./
         with:
-          url: https://geoready.dev
+          url: https://easy4live.com
           format: sarif
