@@ -26,7 +26,7 @@ jobs:
         id: geo
         uses: ./
         with:
-          url: https://geoready.dev
+          url: https://easy4live.com
           min-score: 40
           format: json
 
