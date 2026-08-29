@@ -6,7 +6,7 @@ name: GEO Audit
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 8 * * *" # every day at 06:00 UTC
+    - cron: "0 8 * * 1"
 
 permissions:
   contents: read
