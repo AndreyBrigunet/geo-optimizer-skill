@@ -49,6 +49,35 @@ jobs:
           path: ${{ steps.geo.outputs.report-path }}
           retention-days: 30
 
+      - name: Generate detailed Telegram report
+        run: |
+          geo audit \
+            --url https://easy4live.com \
+            --format text \
+            --output geo-report.txt \
+            --cache
+
+      - name: Send detailed report to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          SCORE: ${{ steps.geo.outputs.score }}
+          BAND: ${{ steps.geo.outputs.band }}
+        run: |
+          RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          CAPTION=$(printf "🔎 Easy4Live GEO Audit\n\nScore: %s/100\nBand: %s\nSite: https://easy4live.com\n\nRaport GEO complet atașat.\nGitHub: %s" \
+            "$SCORE" \
+            "$BAND" \
+            "$RUN_URL")
+
+          curl --fail --silent --show-error \
+            --request POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument" \
+            --form "chat_id=${CHAT_ID}" \
+            --form "document=@geo-report.txt" \
+            --form "caption=${CAPTION}"
+
   # SARIF example — visible in GitHub Security tab
   geo-sarif:
     name: GEO Audit (SARIF)
