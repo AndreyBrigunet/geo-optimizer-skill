@@ -617,6 +617,23 @@ class TestConfig:
         assert "webapp" in SCHEMA_TEMPLATES
         assert "article" in SCHEMA_TEMPLATES
         assert "organization" in SCHEMA_TEMPLATES
+        assert "howto" in SCHEMA_TEMPLATES
+        assert "review" in SCHEMA_TEMPLATES
+        assert "product" in SCHEMA_TEMPLATES
+
+    def test_schema_templates_howto_review_product_are_valid_shapes(self):
+        """The three templates closing the detect->generate gap (#535-cleanup follow-up)
+        must declare the @type audit_schema.py actually looks for (has_howto/has_product),
+        and Review must nest a Rating, not a bare number (schema.org requires the object)."""
+        assert SCHEMA_TEMPLATES["howto"]["@type"] == "HowTo"
+        assert isinstance(SCHEMA_TEMPLATES["howto"]["step"], list)
+        assert SCHEMA_TEMPLATES["howto"]["step"][0]["@type"] == "HowToStep"
+
+        assert SCHEMA_TEMPLATES["review"]["@type"] == "Review"
+        assert SCHEMA_TEMPLATES["review"]["reviewRating"]["@type"] == "Rating"
+
+        assert SCHEMA_TEMPLATES["product"]["@type"] == "Product"
+        assert SCHEMA_TEMPLATES["product"]["offers"]["@type"] == "Offer"
 
     def test_schema_org_required_has_types(self):
         assert "website" in SCHEMA_ORG_REQUIRED
@@ -2302,6 +2319,57 @@ class TestAnalyzeHtmlFile:
             assert "WebApplication" in analysis.found_types
             assert "webapp" not in analysis.missing
             assert "website" not in analysis.missing
+        finally:
+            os.unlink(path)
+
+    def test_analyze_file_unpacks_nested_at_graph(self):
+        """#535-cleanup: before the shared utils/jsonld.iter_jsonld_objects() walker,
+        this analyzer only unpacked one level of @graph — unlike citability.py, which
+        already handled nesting. A @graph inside a @graph must not read as 'Unknown'."""
+        html = """<html><head>
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@graph":[
+            {"@graph":[{"@type":"Organization","name":"Nested Org"}]},
+            {"@type":"WebSite","name":"Test"}
+        ]}
+        </script>
+        </head><body></body></html>"""
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as f:
+            f.write(html)
+            f.flush()
+            path = f.name
+
+        try:
+            analysis = analyze_html_file(path)
+            assert "Unknown" not in analysis.found_types
+            assert "Organization" in analysis.found_types
+            assert "WebSite" in analysis.found_types
+        finally:
+            os.unlink(path)
+
+    def test_analyze_file_oversized_script_skipped(self):
+        """#535-cleanup: schema_injector.py had no DoS size guard on JSON-LD scripts
+        before sharing utils/jsonld.iter_jsonld_objects() with audit_schema.py, which
+        has enforced this since fix #182."""
+        from geo_optimizer.models.config import SCHEMA_JSONLD_MAX_BYTES
+
+        oversized_name = "x" * (SCHEMA_JSONLD_MAX_BYTES + 1000)
+        html = f"""<html><head>
+        <script type="application/ld+json">
+        {{"@type":"Organization","name":"{oversized_name}"}}
+        </script>
+        </head><body></body></html>"""
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as f:
+            f.write(html)
+            f.flush()
+            path = f.name
+
+        try:
+            analysis = analyze_html_file(path)
+            assert "Organization" not in analysis.found_types
+            assert analysis.found_schemas == []
         finally:
             os.unlink(path)
 

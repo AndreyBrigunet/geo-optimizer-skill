@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 import types
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -113,6 +113,12 @@ def _mock_env(monkeypatch) -> None:
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.delenv("MINIMAX_API_KEY", raising=False)
+    monkeypatch.delenv("MINIMAX_API_FORMAT", raising=False)
+    monkeypatch.delenv("MINIMAX_API_BASE_URL", raising=False)
+    monkeypatch.delenv("MINIMAX_THINKING", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.setenv("GEO_LLM_MODEL", "test-model")
 
 
@@ -136,6 +142,13 @@ class TestDetectProvider:
         provider, api_key = llm_client.detect_provider()
         assert provider == "openai"
         assert api_key == "explicit_key"
+
+    def test_detect_provider_minimax_env(self, _mock_env, monkeypatch) -> None:
+        """Detect MiniMax from MINIMAX_API_KEY."""
+        monkeypatch.setenv("MINIMAX_API_KEY", "env_key")
+        provider, api_key = llm_client.detect_provider()
+        assert provider == "minimax"
+        assert api_key == "env_key"
 
 
 class TestQueryLLM:
@@ -197,3 +210,409 @@ class TestQueryLLM:
         resp = llm_client.query_llm("test", provider="groq", api_key="groq_key", system="system prompt")
         assert resp.text == "Groq response"
         assert resp.provider == "groq"
+
+
+class TestQueryMinimax:
+    """Test MiniMax provider over plain HTTP."""
+
+    def test_query_llm_minimax_openai_image_content(self, _mock_env, monkeypatch) -> None:
+        """Pass image content through the OpenAI-compatible format."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"choices": [{"message": {"content": "Multimodal response"}}]})
+            return resp
+
+        content: list[llm_client.LLMContentPart] = [
+            {"type": "text", "text": "Describe the media."},
+            {"type": "image_url", "image_url": {"url": "https://example.com/image.png", "detail": "default"}},
+        ]
+        monkeypatch.setattr("requests.post", _fake_post)
+
+        resp = llm_client.query_llm(content, provider="minimax", api_key="fake_key", model="MiniMax-M3")
+
+        assert resp.text == "Multimodal response"
+        assert captured["json"]["messages"][-1] == {"role": "user", "content": content}
+
+    def test_query_llm_minimax_anthropic_multimodal_content(self, _mock_env, monkeypatch) -> None:
+        """Pass image and video content through the Anthropic-compatible format."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"content": [{"type": "text", "text": "Multimodal response"}]})
+            return resp
+
+        content: list[llm_client.LLMContentPart] = [
+            {"type": "text", "text": "Describe the media."},
+            {"type": "image", "source": {"type": "url", "url": "https://example.com/image.png"}},
+            {"type": "video", "source": {"type": "url", "url": "mm_file://video-id"}},
+        ]
+        monkeypatch.setenv("MINIMAX_API_FORMAT", "anthropic")
+        monkeypatch.setattr("requests.post", _fake_post)
+
+        resp = llm_client.query_llm(content, provider="minimax", api_key="fake_key", model="MiniMax-M3")
+
+        assert resp.text == "Multimodal response"
+        assert captured["json"]["messages"] == [{"role": "user", "content": content}]
+
+    def test_query_llm_minimax_success(self, _mock_env, monkeypatch) -> None:
+        """Use the default model and current chat completion token field."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["url"] = url
+            captured["headers"] = headers
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(
+                return_value={
+                    "model": json["model"],
+                    "choices": [{"message": {"content": "MiniMax response"}}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+                }
+            )
+            return resp
+
+        monkeypatch.delenv("GEO_LLM_MODEL")
+        monkeypatch.setattr("requests.post", _fake_post)
+        resp = llm_client.query_llm("test", provider="minimax", api_key="fake_key", system="system prompt")
+        assert resp.text == "MiniMax response"
+        assert resp.provider == "minimax"
+        assert resp.model == "MiniMax-M3"
+        assert resp.prompt_tokens == 10
+        assert resp.completion_tokens == 5
+        assert captured["url"] == "https://api.minimax.io/v1/chat/completions"
+        assert captured["headers"]["Authorization"] == "Bearer fake_key"
+        assert captured["json"]["model"] == "MiniMax-M3"
+        assert captured["json"]["messages"][0]["role"] == "system"
+        assert captured["json"]["max_completion_tokens"] == 1024
+        assert captured["json"]["reasoning_split"] is True
+        assert "max_tokens" not in captured["json"]
+
+    def test_query_llm_minimax_second_model_and_region(self, _mock_env, monkeypatch) -> None:
+        """Pass the second supported model through a regional API root."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["url"] = url
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(
+                return_value={
+                    "model": json["model"],
+                    "choices": [{"message": {"content": "Regional response"}}],
+                    "usage": {},
+                }
+            )
+            return resp
+
+        monkeypatch.setenv("MINIMAX_API_BASE_URL", "https://api.minimaxi.com/v1/")
+        monkeypatch.setattr("requests.post", _fake_post)
+
+        resp = llm_client.query_llm(
+            "test",
+            provider="minimax",
+            api_key="fake_key",
+            model="MiniMax-M2.7",
+        )
+
+        assert resp.text == "Regional response"
+        assert resp.model == "MiniMax-M2.7"
+        assert captured["url"] == "https://api.minimaxi.com/v1/chat/completions"
+        assert captured["json"]["model"] == "MiniMax-M2.7"
+        assert "thinking" not in captured["json"]
+
+    def test_query_llm_minimax_anthropic_format(self, _mock_env, monkeypatch) -> None:
+        """Build and parse the supported messages wire format."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["url"] = url
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(
+                return_value={
+                    "model": "MiniMax-M3",
+                    "content": [
+                        {"type": "thinking", "thinking": "reasoning"},
+                        {"type": "text", "text": "Messages response"},
+                    ],
+                    "usage": {"input_tokens": 12, "output_tokens": 7},
+                }
+            )
+            return resp
+
+        monkeypatch.setenv("MINIMAX_API_FORMAT", "anthropic")
+        monkeypatch.setenv("MINIMAX_THINKING", "disabled")
+        monkeypatch.setattr("requests.post", _fake_post)
+
+        resp = llm_client.query_llm(
+            "test",
+            provider="minimax",
+            api_key="fake_key",
+            model="MiniMax-M3",
+            system="system prompt",
+        )
+
+        assert resp.text == "Messages response"
+        assert resp.prompt_tokens == 12
+        assert resp.completion_tokens == 7
+        assert captured["url"] == "https://api.minimax.io/anthropic/v1/messages"
+        assert captured["json"]["system"] == "system prompt"
+        assert captured["json"]["max_tokens"] == 1024
+        assert "max_completion_tokens" not in captured["json"]
+        assert captured["json"]["thinking"] == {"type": "disabled"}
+
+        monkeypatch.setenv("MINIMAX_API_BASE_URL", "https://api.minimaxi.com/anthropic/")
+        llm_client.query_llm("test", provider="minimax", api_key="fake_key")
+        assert captured["url"] == "https://api.minimaxi.com/anthropic/v1/messages"
+
+    def test_query_llm_minimax_rejects_invalid_format(self, _mock_env, monkeypatch) -> None:
+        """Reject unsupported wire formats before sending a request."""
+        monkeypatch.setenv("MINIMAX_API_FORMAT", "invalid")
+
+        with patch("requests.post") as mock_post:
+            resp = llm_client.query_llm("test", provider="minimax", api_key="fake_key")
+
+        assert resp.error == "Invalid MINIMAX_API_FORMAT; expected 'openai' or 'anthropic'"
+        assert resp.provider == "minimax"
+        mock_post.assert_not_called()
+
+    def test_query_llm_minimax_http_error(self, _mock_env) -> None:
+        """Return HTTP errors in LLMResponse.error."""
+        import requests as requests_mod
+
+        with patch("requests.post", side_effect=requests_mod.ConnectionError("down")):
+            resp = llm_client.query_llm("test", provider="minimax", api_key="fake_key")
+
+        assert resp.error is not None
+        assert resp.provider == "minimax"
+
+
+class TestDetectProviderGemini:
+    def test_detect_provider_gemini_env(self, _mock_env, monkeypatch) -> None:
+        """Detect Gemini from GEMINI_API_KEY."""
+        monkeypatch.setenv("GEMINI_API_KEY", "env_key")
+        provider, api_key = llm_client.detect_provider()
+        assert provider == "gemini"
+        assert api_key == "env_key"
+
+
+class TestQueryGemini:
+    """Test the Gemini provider over plain HTTP."""
+
+    def test_query_llm_gemini_success(self, _mock_env, monkeypatch) -> None:
+        """Use the default model and read text/usage from the response shape."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["url"] = url
+            captured["headers"] = headers
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(
+                return_value={
+                    "modelVersion": "gemini-3.7-flash",
+                    "candidates": [{"content": {"parts": [{"text": "Gemini response"}]}}],
+                    "usageMetadata": {"promptTokenCount": 8, "candidatesTokenCount": 4},
+                }
+            )
+            return resp
+
+        monkeypatch.delenv("GEO_LLM_MODEL")
+        monkeypatch.setattr("requests.post", _fake_post)
+        resp = llm_client.query_llm("test", provider="gemini", api_key="fake_key", system="system prompt")
+
+        assert resp.text == "Gemini response"
+        assert resp.provider == "gemini"
+        assert resp.model == "gemini-3.7-flash"
+        assert resp.prompt_tokens == 8
+        assert resp.completion_tokens == 4
+        assert (
+            captured["url"]
+            == "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent"
+        )
+        assert captured["headers"]["x-goog-api-key"] == "fake_key"
+        assert captured["json"]["contents"][0]["parts"] == [{"text": "test"}]
+        assert captured["json"]["systemInstruction"] == {"parts": [{"text": "system prompt"}]}
+
+    def test_query_llm_gemini_custom_model(self, _mock_env, monkeypatch) -> None:
+        """A custom model name is interpolated into the URL and forwarded in the payload."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["url"] = url
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(
+                return_value={
+                    "candidates": [{"content": {"parts": [{"text": "ok"}]}}],
+                    "usageMetadata": {},
+                }
+            )
+            return resp
+
+        monkeypatch.setattr("requests.post", _fake_post)
+        resp = llm_client.query_llm("test", provider="gemini", api_key="fake_key", model="gemini-2.5-flash")
+
+        assert resp.text == "ok"
+        assert (
+            captured["url"]
+            == "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+        )
+
+    def test_query_llm_gemini_content_parts_text_only(self, _mock_env, monkeypatch) -> None:
+        """Structured content parts: only the portable 'text' field is forwarded."""
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"candidates": [{"content": {"parts": [{"text": "ok"}]}}]})
+            return resp
+
+        monkeypatch.setattr("requests.post", _fake_post)
+        content: list[llm_client.LLMContentPart] = [
+            {"type": "text", "text": "Describe this image"},
+            {"type": "image_url", "image_url": {"url": "https://example.com/image.png"}},
+        ]
+        llm_client.query_llm(content, provider="gemini", api_key="fake_key")
+
+        assert captured["json"]["contents"][0]["parts"] == [{"text": "Describe this image"}]
+
+    def test_query_llm_gemini_blocked_by_safety_filter(self, _mock_env, monkeypatch) -> None:
+        """No candidates + a blockReason must surface as an error, not an empty citation."""
+
+        def _fake_post(url, headers, json, timeout):
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"promptFeedback": {"blockReason": "SAFETY"}})
+            return resp
+
+        monkeypatch.setattr("requests.post", _fake_post)
+        resp = llm_client.query_llm("test", provider="gemini", api_key="fake_key")
+
+        assert resp.error == "Gemini blocked the prompt: SAFETY"
+        assert resp.provider == "gemini"
+        assert resp.text == ""
+
+    def test_query_llm_gemini_no_candidates_no_block_reason(self, _mock_env, monkeypatch) -> None:
+        """No candidates and no blockReason: empty text, no fabricated error."""
+
+        def _fake_post(url, headers, json, timeout):
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"candidates": []})
+            return resp
+
+        monkeypatch.setattr("requests.post", _fake_post)
+        resp = llm_client.query_llm("test", provider="gemini", api_key="fake_key")
+
+        assert resp.error is None
+        assert resp.text == ""
+        assert resp.provider == "gemini"
+
+    def test_query_llm_gemini_http_error(self, _mock_env) -> None:
+        """Return HTTP/connection errors in LLMResponse.error."""
+        import requests as requests_mod
+
+        with patch("requests.post", side_effect=requests_mod.ConnectionError("down")):
+            resp = llm_client.query_llm("test", provider="gemini", api_key="fake_key")
+
+        assert resp.error is not None
+        assert resp.provider == "gemini"
+
+
+class TestDetectProviderDeepseek:
+    def test_detect_provider_deepseek_env(self, _mock_env, monkeypatch) -> None:
+        """Detect DeepSeek from DEEPSEEK_API_KEY."""
+        monkeypatch.setenv("DEEPSEEK_API_KEY", "env_key")
+        provider, api_key = llm_client.detect_provider()
+        assert provider == "deepseek"
+        assert api_key == "env_key"
+
+
+class TestQueryDeepseek:
+    """Test the DeepSeek provider (fully OpenAI-compatible wire format)."""
+
+    def test_query_llm_deepseek_success(self, _mock_env, monkeypatch) -> None:
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["url"] = url
+            captured["headers"] = headers
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(
+                return_value={
+                    "model": "deepseek-v4-flash",
+                    "choices": [{"message": {"content": "DeepSeek response"}}],
+                    "usage": {"prompt_tokens": 9, "completion_tokens": 6},
+                }
+            )
+            return resp
+
+        monkeypatch.delenv("GEO_LLM_MODEL")
+        monkeypatch.setattr("requests.post", _fake_post)
+        resp = llm_client.query_llm("test", provider="deepseek", api_key="fake_key", system="system prompt")
+
+        assert resp.text == "DeepSeek response"
+        assert resp.provider == "deepseek"
+        assert resp.model == "deepseek-v4-flash"
+        assert resp.prompt_tokens == 9
+        assert resp.completion_tokens == 6
+        assert captured["url"] == "https://api.deepseek.com/chat/completions"
+        assert captured["headers"]["Authorization"] == "Bearer fake_key"
+        assert captured["json"]["messages"][0] == {"role": "system", "content": "system prompt"}
+        assert captured["json"]["messages"][1] == {"role": "user", "content": "test"}
+
+    def test_query_llm_deepseek_custom_model(self, _mock_env, monkeypatch) -> None:
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"choices": [{"message": {"content": "ok"}}], "usage": {}})
+            return resp
+
+        monkeypatch.setattr("requests.post", _fake_post)
+        llm_client.query_llm("test", provider="deepseek", api_key="fake_key", model="deepseek-v4-pro")
+
+        assert captured["json"]["model"] == "deepseek-v4-pro"
+
+    def test_query_llm_deepseek_no_system_prompt(self, _mock_env, monkeypatch) -> None:
+        captured: dict = {}
+
+        def _fake_post(url, headers, json, timeout):
+            captured["json"] = json
+            resp = Mock()
+            resp.raise_for_status = Mock()
+            resp.json = Mock(return_value={"choices": [{"message": {"content": "ok"}}], "usage": {}})
+            return resp
+
+        monkeypatch.setattr("requests.post", _fake_post)
+        llm_client.query_llm("test", provider="deepseek", api_key="fake_key")
+
+        assert captured["json"]["messages"] == [{"role": "user", "content": "test"}]
+
+    def test_query_llm_deepseek_http_error(self, _mock_env) -> None:
+        import requests as requests_mod
+
+        with patch("requests.post", side_effect=requests_mod.ConnectionError("down")):
+            resp = llm_client.query_llm("test", provider="deepseek", api_key="fake_key")
+
+        assert resp.error is not None
+        assert resp.provider == "deepseek"

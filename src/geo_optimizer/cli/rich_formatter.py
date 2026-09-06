@@ -276,7 +276,7 @@ def _build_robots_card(result: AuditResult, score: int, max_score: int) -> Panel
     content_parts.append(Text())
 
     if not result.robots.found:
-        content_parts.append(Text("  File non trovato", style=f"italic {_COLORS['dim']}"))
+        content_parts.append(Text("  File not found", style=f"italic {_COLORS['dim']}"))
     else:
         # Bot info with detail
         info = Text()
@@ -327,7 +327,7 @@ def _build_llms_card(result: AuditResult, score: int, max_score: int) -> Panel:
     content_parts.append(Text())
 
     if not result.llms.found:
-        content_parts.append(Text("  File non trovato", style=f"italic {_COLORS['dim']}"))
+        content_parts.append(Text("  File not found", style=f"italic {_COLORS['dim']}"))
     else:
         # Structure details
         features = []
@@ -814,9 +814,9 @@ def _build_js_card(result: AuditResult) -> Panel | None:
         content_parts.append(fw)
 
     if js.has_empty_root:
-        content_parts.append(Text("  ⚠ Container SPA vuoto rilevato", style=_COLORS["foundation"]))
+        content_parts.append(Text("  ⚠ Empty SPA container detected", style=_COLORS["foundation"]))
     if js.has_noscript_content:
-        content_parts.append(Text("  ℹ Fallback <noscript> presente", style=_COLORS["dim"]))
+        content_parts.append(Text("  ℹ Fallback <noscript> present", style=_COLORS["dim"]))
 
     color = _COLORS["excellent"] if not js.js_dependent else _COLORS["critical"]
     status = "PASS" if not js.js_dependent else "JS-DEPENDENT"
@@ -872,6 +872,7 @@ def _build_webmcp_card(result: AuditResult) -> Panel | None:
     webmcp_items = [
         ("registerTool() API", wm.has_register_tool),
         ("toolname attributes", wm.has_tool_attributes),
+        ("Declared in ai/summary.json", wm.has_webmcp_declaration),
     ]
     for label, present in webmcp_items:
         line = Text("  ")
@@ -879,6 +880,8 @@ def _build_webmcp_card(result: AuditResult) -> Panel | None:
             line.append(f"✓ {label}", style=_COLORS["excellent"])
             if label == "toolname attributes" and wm.tool_count:
                 line.append(f" ({wm.tool_count})", style=_COLORS["dim"])
+            elif label == "Declared in ai/summary.json" and wm.declared_tool_count:
+                line.append(f" ({wm.declared_tool_count})", style=_COLORS["dim"])
         else:
             line.append(f"✗ {label}", style=_COLORS["dim"])
         content_parts.append(line)

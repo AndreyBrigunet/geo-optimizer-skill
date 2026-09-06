@@ -11,7 +11,8 @@ from pathlib import Path
 
 import click
 
-from geo_optimizer.utils.validators import validate_public_url
+from geo_optimizer.models.config import resolve_user_agent_override, set_user_agent_override
+from geo_optimizer.utils.validators import normalize_url_scheme, validate_public_url
 
 
 @click.command()
@@ -29,8 +30,16 @@ from geo_optimizer.utils.validators import validate_public_url
     help="Filter categories: robots,llms,schema,meta,ai_discovery,content (comma-separated)",
 )
 @click.option("--config", "config_file", default=None, help="Path to .geo-optimizer.yml")
-def fix(url, output_dir, dry_run, do_apply, only, config_file):
+@click.option(
+    "--user-agent",
+    default=None,
+    help="Override the User-Agent sent when fetching the site (also via GEO_USER_AGENT). "
+    "Does not affect the CDN AI-crawler check, which needs its own bot identity.",
+)
+def fix(url, output_dir, dry_run, do_apply, only, config_file, user_agent):
     """Automatically generate GEO fixes for the site."""
+    set_user_agent_override(resolve_user_agent_override(user_agent))
+
     # If --apply is specified, disable dry-run
     if do_apply:
         dry_run = False
@@ -47,7 +56,7 @@ def fix(url, output_dir, dry_run, do_apply, only, config_file):
             sys.exit(1)
 
     # Anti-SSRF validation
-    safe_url = url if url.startswith(("http://", "https://")) else f"https://{url}"
+    safe_url = normalize_url_scheme(url)
     safe, reason = validate_public_url(safe_url)
     if not safe:
         click.echo(f"\n❌ Unsafe URL: {reason}", err=True)

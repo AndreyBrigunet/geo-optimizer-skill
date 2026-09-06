@@ -154,9 +154,60 @@ geo fix --url https://yoursite.com --apply
 # Generate llms.txt from sitemap
 geo llms --base-url https://yoursite.com --output ./public/llms.txt
 
+# Check whether an existing llms.txt still matches the current sitemap
+# (exits 1 on stale URLs — CI-gateable, no per-link HTTP request)
+geo llms --base-url https://yoursite.com --check-drift
+
 # Generate JSON-LD schema
 geo schema --type faq --url https://yoursite.com
 ```
+
+MiniMax can use either supported API wire format and regional API root:
+
+```bash
+export MINIMAX_API_KEY="your-api-key"
+export MINIMAX_API_FORMAT="openai"  # or "anthropic"
+export MINIMAX_API_BASE_URL="https://api.minimax.io/v1"
+geo citations --provider minimax --brand "YourBrand" --domain yoursite.com
+```
+
+For the China endpoint, use `https://api.minimaxi.com/v1` with the `openai` format or
+`https://api.minimaxi.com/anthropic` with the `anthropic` format. The global messages-format root is
+`https://api.minimax.io/anthropic`. `MINIMAX_THINKING` accepts `adaptive` or `disabled` for `MiniMax-M3`;
+`MiniMax-M2.7` always uses thinking.
+
+Set `GEO_LLM_MODEL` to select either supported model. Model capabilities are:
+
+| Model | Context window | API input modalities | Thinking |
+|-------|----------------|----------------------|----------|
+| `MiniMax-M3` | 1,000,000 tokens | Text, image, video | `adaptive` or `disabled` |
+| `MiniMax-M2.7` | 204,800 tokens | Text | Always on |
+
+`geo citations` currently sends text prompts. The modalities column lists what each model's API
+accepts; `query_llm` currently types text and image content parts, so video input needs a schema
+addition before it can be passed. See the
+[official MiniMax pricing page](https://platform.minimax.io/docs/pricing/overview) for current rates.
+
+Gemini is checked directly, not just simulated via crawler user-agents:
+
+```bash
+export GEMINI_API_KEY="your-api-key"
+geo citations --provider gemini --brand "YourBrand" --domain yoursite.com
+```
+
+Set `GEO_LLM_MODEL` to pick a specific model (default: `gemini-3.7-flash`). Uses the Gemini API
+directly (`generativelanguage.googleapis.com`), not Vertex AI — no extra dependency needed.
+
+DeepSeek and MiniMax cover citation checks against the Chinese AI answer-engine ecosystem, which
+Western-only providers miss entirely:
+
+```bash
+export DEEPSEEK_API_KEY="your-api-key"
+geo citations --provider deepseek --brand "YourBrand" --domain yoursite.com
+```
+
+Fully OpenAI-compatible wire format against `api.deepseek.com`. Default model `deepseek-v4-flash`;
+set `GEO_LLM_MODEL=deepseek-v4-pro` for the higher-capability tier.
 
 ---
 
@@ -252,7 +303,7 @@ Treat AI visibility like test coverage: gate every deploy on it. The GitHub Acti
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.16.4
+- uses: Auriti-Labs/geo-optimizer-skill@v4.17.1
   with:
     url: https://yoursite.com
     min-score: 70        # Fail the build if the GEO score drops below 70
@@ -402,6 +453,19 @@ We focus on **technical infrastructure** (robots.txt, llms.txt, schema, meta) ov
 
 GEO Optimizer translates these findings into technical and content-level signals that can be operationally audited and tracked over time.
 
+## Related Tools
+
+GEO Optimizer scores **input-side readiness** — the technical and content signals that make a
+site reachable, parseable, and citable by AI crawlers. It does not observe what AI engines
+actually say about a brand outside `geo citations`' own lightweight LLM check, and doesn't
+cover Chinese AI engines (Doubao, Qwen, DeepSeek, Yuanbao) at all.
+
+[**OpenGEO**](https://github.com/cangqiaoGEO) is a complementary, open GEO standard effort
+focused on **output-side observation**: whether AI engines actually mention or cite a brand,
+with a published interchange format for those observations. The two approaches are
+deliberately split along that boundary — readiness vs. results — see [#534](https://github.com/Auriti-Labs/geo-optimizer-skill/issues/534)
+for the discussion.
+
 ---
 
 ## Roadmap
@@ -417,8 +481,8 @@ This project follows a deliberate release cadence — focused waves, not noisy p
 | v4.14.0 | Jun 2026 | Quiet Glass | Shipped |
 | v4.15.0 | Jul 2026 | Aperture | Shipped |
 | v4.16.0 | Aug 2026 | Ground Truth | Shipped |
-| v4.17.0-rc1 | Jan 2027 | Threshold | Planned |
-| v4.17.0-rc2 / v4.18.0 | Mar 2027 | Pale Signal | Planned |
+| v4.17.0 | Aug 2026 | Parallax | Shipped |
+| v4.17.1 | Aug 2026 | — (patch) | Shipped |
 | v5.0.0 | May 2027 | Black Archive | Exploring |
 
 Next focus areas: signal architecture, retrieval surface analysis, scoring recalibration, and structural pattern recognition. The v5.0 cycle represents a broader architectural evolution.
