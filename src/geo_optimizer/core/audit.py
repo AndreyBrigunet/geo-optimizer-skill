@@ -151,6 +151,21 @@ def build_recommendations(
                 "AI crawlers can read it and may penalize this cloaking pattern"
             )
 
+    # UGC injection surface — advisory, runs regardless of severity
+    if prompt_injection is not None and prompt_injection.checked and prompt_injection.ugc_surface_found:
+        _surfaces = ", ".join(prompt_injection.ugc_surface_samples[:3])
+        if prompt_injection.ugc_injection_risk:
+            _critical.append(
+                f"Injection pattern found on a page that also exposes user-generated content ({_surfaces}) — "
+                "the payload may be a third-party comment/review, not your own markup. Moderate the UGC area, "
+                'mark links inside it rel="ugc", and consider excluding unmoderated UGC from AI crawlers.'
+            )
+        else:
+            _l_content.append(
+                f"This page exposes user-generated content ({_surfaces}). It is an injection surface — a third "
+                'party can place text there that AI crawlers read. Keep it moderated and mark its links rel="ugc".'
+            )
+
     # ── HIGH — robots(18pt), llms(18pt), meta title(5pt) ──────────────────
     # Fix #453: split robots recommendation — create vs update
     if not robots.found:
@@ -771,8 +786,10 @@ def run_full_audit(url: str, use_cache: bool = False, project_config=None) -> Au
 
     # Fix #285: compute soup_clean once and pass it to all sub-audits
     # Avoids 3-4 re-parses of the same HTML (saves 50-200ms per page)
+    # #537: also strip <noscript>/<template> — their text is not page copy but
+    # get_text() still includes <noscript>, inflating word counts and boilerplate.
     soup_clean = copy.deepcopy(soup)
-    for tag in soup_clean(["script", "style"]):
+    for tag in soup_clean(["script", "style", "noscript", "template"]):
         tag.decompose()
 
     # Fetch robots.txt, llms.txt, llms-full.txt and AI discovery with local fetch_url
@@ -827,7 +844,7 @@ def run_full_audit(url: str, use_cache: bool = False, project_config=None) -> Au
     webmcp_result = audit_webmcp_readiness(soup, r.text, schema, ai_disc)
 
     # v4.3: Negative Signals detection — zero HTTP fetch
-    negative_signals_result = audit_negative_signals(soup, r.text, content, meta, schema)
+    negative_signals_result = audit_negative_signals(soup, r.text, content, meta, schema, soup_clean=soup_clean)
 
     # v4.4: Prompt Injection Pattern Detection (#276) — zero HTTP fetch
     from geo_optimizer.core.injection_detector import audit_prompt_injection
@@ -984,8 +1001,9 @@ async def run_full_audit_async(url: str, project_config=None) -> AuditResult:
     soup = BeautifulSoup(r_home.text, "html.parser")
 
     # Fix #285: compute soup_clean once for the async path
+    # #537: strip <noscript>/<template> too (their text is not page copy)
     soup_clean = copy.deepcopy(soup)
-    for tag in soup_clean(["script", "style"]):
+    for tag in soup_clean(["script", "style", "noscript", "template"]):
         tag.decompose()
 
     # Sub-audit robots.txt (uses pre-fetched response with extra_bots)
@@ -1026,7 +1044,7 @@ async def run_full_audit_async(url: str, project_config=None) -> AuditResult:
     webmcp_result = audit_webmcp_readiness(soup, r_home.text, schema, ai_disc)
 
     # v4.3: Negative Signals detection — zero HTTP fetch
-    negative_signals_result = audit_negative_signals(soup, r_home.text, content, meta, schema)
+    negative_signals_result = audit_negative_signals(soup, r_home.text, content, meta, schema, soup_clean=soup_clean)
 
     # v4.4: Prompt Injection Pattern Detection (#276) — zero HTTP fetch
     from geo_optimizer.core.injection_detector import audit_prompt_injection
