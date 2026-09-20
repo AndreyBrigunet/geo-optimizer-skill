@@ -21,7 +21,7 @@ import os
 import re
 import secrets
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlsplit
@@ -163,9 +163,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "font-src 'self' data:; "
             "img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com "
             "https://launchpadly.co https://cdn.sanity.io; "
-            # region1.google-analytics.com: endpoint regionale GA4 (usato da gtag.js)
-            "connect-src 'self' https://www.google-analytics.com https://analytics.google.com "
-            "https://stats.g.doubleclick.net https://region1.google-analytics.com; "
+            # GA4 instrada la raccolta dati su sottodomini regionali sharded
+            # (region1, region2, ...) scelti per sessione — un singolo host
+            # esplicito (region1.google-analytics.com) bloccava silenziosamente
+            # le sessioni instradate su un region diverso. Wildcard su entrambe
+            # le famiglie di dominio usate da GA4.
+            "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com "
+            "https://analytics.google.com https://*.analytics.google.com "
+            "https://stats.g.doubleclick.net; "
             "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
         )
         # Fix #413: restrict browser API access
@@ -702,7 +707,7 @@ async def stats():
             ),
             asyncio.to_thread(
                 _fetch_json,
-                "https://pypistats.org/api/packages/geo-optimizer-skill/system?mirrors=false",
+                "https://pypistats.org/api/packages/geo-optimizer-skill/overall?mirrors=false",
             ),
             _maybe_fetch_stats(),
         )
@@ -712,13 +717,27 @@ async def stats():
         else:
             result["github_stars"] = 13  # Fallback: last known value
 
+        # Monthly downloads: sum the last 30 days of the /overall daily series.
+        #
+        # Two earlier attempts were wrong, both worth recording:
+        #   - /system summed downloads per operating system over the package's WHOLE
+        #     history, so the site published a lifetime cumulative (~74k) under a
+        #     "downloads/mo" label — an overstatement of roughly 13x.
+        #   - /recent reports last_month directly, but pypistats rate-limits that
+        #     endpoint: it answers 429 while /system and /overall answer 200, so the
+        #     field silently fell back to 0 in production.
         if pypi_data:
-            downloads = sum(
-                item.get("downloads", 0)
-                for item in pypi_data.get("data", [])
-                if item.get("category") not in (None, "null")
+            cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+            rows = pypi_data.get("data") or []
+            result["pypi_downloads_month"] = sum(
+                row.get("downloads", 0) for row in rows if isinstance(row, dict) and str(row.get("date", "")) >= cutoff
             )
-            result["pypi_downloads_month"] = downloads
+
+        # Never publish a zero: a counter at 0 reads as "nobody uses this" and is worse
+        # than a value a few hours old. Reuse the last good reading when the upstream
+        # fetch fails (429, timeout), even if the cache entry has expired.
+        if not result["pypi_downloads_month"] and cached:
+            result["pypi_downloads_month"] = cached["data"].get("pypi_downloads_month", 0)
 
         if geo_stats and "stats" in geo_stats:
             result["audits_run"] = geo_stats["stats"].get("audits", 0)

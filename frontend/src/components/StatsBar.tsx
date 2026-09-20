@@ -25,7 +25,10 @@ interface StatsBarProps {
 }
 
 // Usato solo se la pagina non passa nulla (nessun chiamante oggi lo fa).
-const FALLBACK: Stats = { github_stars: 767, pypi_downloads_month: 71997, audits_run: 1912 };
+// Shown only until /api/stats answers. pypi_downloads_month is now genuinely
+// monthly (pypistats /recent), so this value is an order of magnitude lower than
+// the old one, which was a lifetime cumulative mislabelled as monthly.
+const FALLBACK: Stats = { github_stars: 831, pypi_downloads_month: 5690, audits_run: 2006 };
 
 export default function StatsBar({ initial, initialIsLive = false, variant = 'default' }: StatsBarProps) {
   const [stats, setStats] = useState<Stats>(initial ?? FALLBACK);
@@ -35,7 +38,10 @@ export default function StatsBar({ initial, initialIsLive = false, variant = 'de
     fetch(buildApiUrl('/stats'))
       .then((r) => r.json())
       .then((data: Stats) => {
-        if (data.github_stars > 0) {
+        // All or nothing, same rule as utils/publicStats.ts: the endpoint returns 0
+        // for any counter it could not fetch, and a 0 on screen reads as "nobody uses
+        // this" — worse than the build-time value from a few hours earlier.
+        if (data.github_stars > 0 && data.pypi_downloads_month > 0 && data.audits_run > 0) {
           setStats(data);
           setLive(true);
         }

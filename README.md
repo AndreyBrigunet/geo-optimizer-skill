@@ -7,7 +7,7 @@
 #### Audit, optimize, and track whether **ChatGPT, Perplexity, Gemini, Claude, and Google AI Overviews** can crawl, understand, and **cite** your website.
 
 [![PyPI](https://img.shields.io/pypi/v/geo-optimizer-skill?style=flat-square&color=3b82f6)](https://pypi.org/project/geo-optimizer-skill/)
-[![Downloads/month](https://img.shields.io/pypi/dm/geo-optimizer-skill?style=flat-square&color=3b82f6&label=downloads%2Fmonth)](https://pypi.org/project/geo-optimizer-skill/)
+[![Downloads/month](https://static.pepy.tech/badge/geo-optimizer-skill/month)](https://pepy.tech/project/geo-optimizer-skill)
 [![GitHub Stars](https://img.shields.io/github/stars/auriti-labs/geo-optimizer-skill?style=flat-square&color=facc15&logo=github&label=stars)](https://github.com/auriti-labs/geo-optimizer-skill/stargazers)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-3776ab?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![CI](https://github.com/auriti-labs/geo-optimizer-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/auriti-labs/geo-optimizer-skill/actions)
@@ -171,6 +171,16 @@ geo schema --type faq --url https://yoursite.com
 regional API roots and dual wire formats, and DeepSeek's coverage of the Chinese AI
 answer-engine ecosystem. Full setup for each: [docs/llm-providers.md](docs/llm-providers.md).
 
+Google AI Overviews isn't an LLM you can prompt — it's a SERP feature — so `--provider serpbase`
+observes the real Google SERP directly (organic results + the AI Overview block, when Google
+renders one) via [serpbase.dev](https://serpbase.dev/docs) instead of inferring it through a
+Gemini API key. Opt-in, bring-your-own-key: 100 free searches, then $0.30/1k.
+
+```bash
+export SERPBASE_API_KEY=...
+geo citations --brand "YourBrand" --domain yoursite.com --provider serpbase
+```
+
 ---
 
 ## What it checks
@@ -265,7 +275,7 @@ Treat AI visibility like test coverage: gate every deploy on it. The GitHub Acti
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.18.0
+- uses: Auriti-Labs/geo-optimizer-skill@v4.18.2
   with:
     url: https://yoursite.com
     min-score: 70        # Fail the build if the GEO score drops below 70
@@ -446,6 +456,8 @@ This project follows a deliberate release cadence — focused waves, not noisy p
 | v4.17.0 | Aug 2026 | Parallax | Shipped |
 | v4.17.1 | Aug 2026 | — (patch) | Shipped |
 | v4.18.0 | Sep 2026 | Quorum | Shipped |
+| v4.18.1 | Sep 2026 | — (patch) | Shipped |
+| v4.18.2 | Sep 2026 | — (patch) | Shipped |
 | v5.0.0 | May 2027 | Black Archive | Exploring |
 
 Next focus areas: signal architecture, retrieval surface analysis, scoring recalibration, and structural pattern recognition. The v5.0 cycle represents a broader architectural evolution.
@@ -482,6 +494,14 @@ All URL inputs are validated against private IP ranges (RFC 1918, loopback, link
 
 ---
 
+## Sponsors
+
+GEO Optimizer is free and open source (MIT), built and maintained by Juan Camilo Auriti. If it saves you time, consider sponsoring its development on GitHub Sponsors — it directly funds the time spent on audits, bug fixes, and new research-backed checks.
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?style=flat-square&logo=GitHub-Sponsors&logoColor=white)](https://github.com/sponsors/auriti)
+
+---
+
 ## Contributing
 
 ```bash
@@ -514,10 +534,11 @@ The open-source engine for **Answer Engine Optimization** — get your site cite
 
 ## Star History
 
-<a href="https://star-history.dera.page/#Auriti-Labs/geo-optimizer-skill&type=timeline">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/image?repos=Auriti-Labs/geo-optimizer-skill&type=timeline&theme=dark&logscale&legend=bottom-right" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/image?repos=Auriti-Labs/geo-optimizer-skill&type=timeline&logscale&legend=bottom-right" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/image?repos=Auriti-Labs/geo-optimizer-skill&type=timeline&logscale&legend=bottom-right" />
- </picture>
+<a href="https://star-history.com/#Auriti-Labs/geo-optimizer-skill&type=Date">
+<picture>
+          <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Auriti-Labs/geo-optimizer-skill&type=Date&theme=dark" />
+          <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Auriti-Labs/geo-optimizer-skill&type=Date" />
+          <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Auriti-Labs/geo-optimizer-skill&type=Date" />
+</picture>
 </a>
+</picture>
