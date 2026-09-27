@@ -7,7 +7,11 @@ import { getArticlesByCategory, urlForImage } from '../../utils/sanity';
 
 export const getStaticPaths = (async ({ paginate }) => {
   const articles = await getArticlesByCategory('guides');
-  return paginate(articles, { pageSize: 6 });
+  // Paginazione disattivata: ~55 guide vivono su un'unica /guides/ (niente
+  // doorway paginate 2..10, già 301 → /guides/). pageSize ampio mantiene il
+  // template (page.*) funzionante e `page.lastPage > 1` non renderizza il nav.
+  // Rivedere quando le guide superano ~400.
+  return paginate(articles, { pageSize: 500 });
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props;
@@ -15,7 +19,7 @@ const articles = page.data;
 const canonical = `https://geoready.dev/guides/${page.currentPage > 1 ? `${page.currentPage}/` : ''}`;
 const title = page.currentPage > 1
   ? `Guides — Page ${page.currentPage} of ${page.lastPage} — GeoReady`
-  : 'Guides — AI Search Visibility & Generative Engine Optimization';
+  : 'Guides — AI Search Visibility & GEO';
 const guideActionLinks = [
   { href: '/ai-seo-audit/', label: 'AI SEO audit' },
   { href: '/chatgpt-visibility-checker/', label: 'ChatGPT visibility' },

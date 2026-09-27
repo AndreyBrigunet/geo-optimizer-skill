@@ -17,7 +17,21 @@
 
 **One command scores your site 0–100 on AI-search readiness, tells you exactly what to fix, and checks whether AI engines actually cite you.**
 
-[Quick Start](#quick-start) · [Live Demo](https://geoready.dev) · [Pricing](https://geoready.dev/pricing) · [Sign Up](https://app.geoready.dev/signup) · [Documentation](https://auriti-labs.github.io/geo-optimizer-skill/) · [Changelog](CHANGELOG.md)
+[Quick Start](#quick-start) · [Live Demo](https://geoready.dev) · [Pricing](https://geoready.dev/pricing) · [Sign Up](https://app.geoready.dev/signup) · [Documentation](https://geoready.dev/docs/) · [Changelog](CHANGELOG.md)
+
+---
+
+## 📖 The book: *AI Search Engineering*
+
+**992-page technical guide to Generative Engine Optimization (GEO), AI citations, and agent-ready websites** — by Juan Camilo Auriti, the author of this engine.
+
+> How to structure, optimize, and measure your site so ChatGPT, Perplexity, Gemini, and Claude find it, understand it, and cite it — with worked examples, the research behind the signals, and the monitoring loop that turns a one-off score into a defensible position.
+
+[**Get the book — paperback + Kindle on Amazon**](https://www.amazon.it/dp/B0HJGLW5NP) · [**Book page & more details**](https://geoready.dev/book/) · ISBN 979-8172934568
+
+---
+
+## What is GEO Optimizer?
 
 <img src="assets/demo.gif" alt="geo audit demo — AI visibility score 0-100 with prioritized fixes in one command" width="800"/>
 
@@ -275,7 +289,7 @@ Treat AI visibility like test coverage: gate every deploy on it. The GitHub Acti
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.18.2
+- uses: Auriti-Labs/geo-optimizer-skill@v4.18.3
   with:
     url: https://yoursite.com
     min-score: 70        # Fail the build if the GEO score drops below 70
@@ -458,6 +472,7 @@ This project follows a deliberate release cadence — focused waves, not noisy p
 | v4.18.0 | Sep 2026 | Quorum | Shipped |
 | v4.18.1 | Sep 2026 | — (patch) | Shipped |
 | v4.18.2 | Sep 2026 | — (patch) | Shipped |
+| v4.18.3 | Sep 2026 | — (patch) | Shipped |
 | v5.0.0 | May 2027 | Black Archive | Exploring |
 
 Next focus areas: signal architecture, retrieval surface analysis, scoring recalibration, and structural pattern recognition. The v5.0 cycle represents a broader architectural evolution.

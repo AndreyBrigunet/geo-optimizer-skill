@@ -462,13 +462,13 @@ _DOCS_PAGES = {
 }
 
 
-@app.get("/docs/", response_class=HTMLResponse)
+# @app.get("/docs/", response_class=HTMLResponse)
 async def docs_index(request: Request):
     """Documentation index — redirect to the main docs page."""
     return await docs_page(request, "index")
 
 
-@app.get("/docs/{slug}", response_class=HTMLResponse)
+# @app.get("/docs/{slug}", response_class=HTMLResponse)
 async def docs_page(request: Request, slug: str):
     """Render a documentation page from docs/*.md as styled HTML."""
     import re as _re
@@ -1563,6 +1563,8 @@ def _audit_result_to_dict(result) -> dict:
             "has_links": result.llms.has_links,
             "has_full": result.llms.has_full,
             "word_count": result.llms.word_count,
+            "blocked_by_cdn": result.llms.blocked_by_cdn,
+            "validation_warnings": list(result.llms.validation_warnings),
         },
         # Alias keys used by analytics_dashboard
         "llms_found": result.llms.found,
@@ -2014,29 +2016,29 @@ def _dict_to_audit_result(data: dict):
 #         "- Plugin system: Custom checks via `CheckRegistry` — extend without forking\n\n"
 #         "## Documentation\n\n"
 #         "- [Getting Started]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/getting-started/): "
+#         "(https://geoready.dev/docs/getting-started/): "
 #         "Install and first audit\n"
 #         "- [GEO Audit]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/geo-audit/): "
+#         "(https://geoready.dev/docs/geo-audit/): "
 #         "Full CLI reference\n"
 #         "- [Scoring Rubric]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/scoring-rubric/): "
+#         "(https://geoready.dev/docs/scoring-rubric/): "
 #         "All 8 categories explained\n"
 #         "- [MCP Server]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/mcp-server/): "
+#         "(https://geoready.dev/docs/mcp-server/): "
 #         "AI agent integration\n"
 #         "- [CI/CD]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/ci-cd/): "
+#         "(https://geoready.dev/docs/ci-cd/): "
 #         "GitHub Actions integration\n"
 #         "- [GEO Methods]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/geo-methods/): "
+#         "(https://geoready.dev/docs/geo-methods/): "
 #         "47 research-backed methods\n\n"
 #         "## Reference\n\n"
 #         "- [AI Bots Reference]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/"
+#         "(https://geoready.dev/docs/"
 #         "ai-bots-reference/): 27 AI crawlers documented\n"
 #         "- [Troubleshooting]"
-#         "(https://auriti-labs.github.io/geo-optimizer-skill/troubleshooting/): "
+#         "(https://geoready.dev/docs/troubleshooting/): "
 #         "Common issues\n"
 #         "- [Changelog]"
 #         "(https://github.com/Auriti-Labs/geo-optimizer-skill/blob/main/CHANGELOG.md): "
@@ -2444,6 +2446,20 @@ async def analyze_logs(request: Request):
 _SEO_REDIRECTS = {
     "/de/beste-geo-tools": "/best-geo-tools/",
     "/nl/beste-geo-tools": "/best-geo-tools/",
+    # Il vecchio slug a unica pagina di State of GEO (soft-404 client-side) →
+    # vera 301 alla versione completa di giugno 2026.
+    "/state-of-geo-2026": "/state-of-geo/june-2026/",
+    # Paginazione /guides/ rimossa (55 guide su un'unica pagina): le URL 2..10
+    # consolidano su /guides/ invece di restare doorway sottili.
+    "/guides/2": "/guides/",
+    "/guides/3": "/guides/",
+    "/guides/4": "/guides/",
+    "/guides/5": "/guides/",
+    "/guides/6": "/guides/",
+    "/guides/7": "/guides/",
+    "/guides/8": "/guides/",
+    "/guides/9": "/guides/",
+    "/guides/10": "/guides/",
 }
 
 
