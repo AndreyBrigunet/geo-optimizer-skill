@@ -19,9 +19,11 @@ One command scores any website 0–100 on whether **ChatGPT, Perplexity, Gemini,
 uvx --from geo-optimizer-skill geo audit --url https://yoursite.com
 ```
 
+*No install, no account, no API key. Runs in seconds.*
+
 <img src="assets/demo.gif" alt="geo audit demo — AI visibility score 0-100 with prioritized fixes in one command" width="800"/>
 
-[Quick Start](#quick-start) · [Free web audit](https://geoready.dev) · [Docs](https://geoready.dev/docs/) · [The book](#the-book-behind-the-engine-ai-search-engineering) · [Changelog](CHANGELOG.md)
+[Quick Start](#quick-start) · [Free web audit, no account](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=nav) · [Docs](https://geoready.dev/docs/) · [The book](#the-book-behind-the-engine-ai-search-engineering) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -31,9 +33,9 @@ uvx --from geo-optimizer-skill geo audit --url https://yoursite.com
 
 **GEO Optimizer measures how visible a website is to AI answer engines** — ChatGPT, Perplexity, Google AI Overviews, Gemini, and Claude — scores it 0–100, and generates the fixes. It is free, MIT-licensed, and runs as a CLI, a Python library, an [MCP server](#mcp-server), a [GitHub Action](#cicd--fail-the-build-when-ai-readiness-drops), or an [Astro integration](#astro-integration).
 
-The practice has several names — **Answer Engine Optimization (AEO)**, **Generative Engine Optimization (GEO)**, **AI SEO**, **LLM SEO** — and they describe the same problem: an answer engine gives one synthesized response and cites a handful of sources. Ranking on Google does not make you one of them. Being reachable, parseable, and quotable does.
+*Also called GEO, AI SEO, or LLM SEO — same problem: an answer engine gives one response and cites a handful of sources. Ranking on Google does not make you one of them. Being reachable, parseable, and quotable does.*
 
-**16 CLI commands** · **8 scoring categories** · **27 AI crawlers checked** · **47 content checks** · **12 MCP tools** · **8 output formats** · **2,000+ tests**
+**16 CLI commands** · **9 scoring categories** · **27 AI crawlers checked** · **47 content checks** · **12 MCP tools** · **8 output formats** · **2,000+ tests**
 
 ### What a real audit looks like
 
@@ -77,13 +79,15 @@ Two runs of `geo audit`, September 2026. `example.com` has no robots.txt, no `ll
 </td></tr>
 </table>
 
-Across 1,400+ sites audited through [GeoReady](https://geoready.dev/state-of-geo/), the median score is **57/100** and 58% publish an `llms.txt`. The sample is self-selected (people who chose to audit their site), so treat it as directional, not a census of the web.
+Across 1,400+ sites audited through [GeoReady](https://geoready.dev/state-of-geo/?utm_source=github&utm_medium=readme&utm_campaign=benchmark), the median score is **57/100** and 58% publish an `llms.txt`. The sample is self-selected (people who chose to audit their site), so treat it as directional, not a census of the web.
 
 ### Then it writes the fixes
 
 `geo fix` turns the audit into files: robots.txt rules for all 27 AI bots, `llms.txt`, JSON-LD schema, AI discovery endpoints, and meta tags. It previews by default and writes only with `--apply`. The score after fixes is the tool's own estimate, not a measured result.
 
 <img src="assets/fix.svg" alt="geo fix on example.com — 9 fixes generated, estimated score 8/100 to 70/100" width="800"/>
+
+Prefer no terminal? Run the same audit free at [geoready.dev](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=proof-table) — no account needed.
 
 ---
 
@@ -155,6 +159,33 @@ Guides for most commands live in [`docs/`](docs/). Provider setup for `geo citat
 
 ---
 
+## After the one-shot audit
+
+`geo audit` is a snapshot. It can't tell you that your score dropped after last Tuesday's deploy, or whether citations started appearing once your fixes shipped. `geo history`, `geo drift`, and `geo track` help — but only when someone remembers to run them.
+
+The hosted platform runs the same engine on a schedule, so the watching happens without you:
+
+- **Free plan** — one monitored domain, weekly drift email, score history, and AI citation tracking.
+- **Pro / Studio / Agency, from $19/mo** — multi-site portfolios, regression alerts, client reporting. [Pricing](https://geoready.dev/pricing/?utm_source=github&utm_medium=readme&utm_campaign=bridge).
+
+[**Create a free account**](https://app.geoready.dev/signup/?utm_source=github&utm_medium=readme&utm_campaign=bridge) · [Free web audit, no account](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=bridge) · [Get the free 160-page GEO Readiness Manual](https://geoready.dev/geo-readiness-manual/?utm_source=github&utm_medium=readme&utm_campaign=bridge)
+
+Same engine everywhere: the platform adds what a local CLI cannot — server-side monitoring, history, and team features.
+
+<details>
+<summary><b>Open source vs hosted — the full comparison</b></summary>
+
+| | GEO Optimizer (this repo) | [geoready.dev](https://geoready.dev) Free | GeoReady Pro / Studio / Agency |
+|---|---|---|---|
+| **Access** | MIT, runs locally | Web audit, no account | [Self-serve sign-up](https://app.geoready.dev/signup/?utm_source=github&utm_medium=readme&utm_campaign=comparison) |
+| **Best for** | Developers, CI/CD, automation | Quick checks, SEO specialists | Ongoing clients, multi-site portfolios |
+| **What you get** | Full engine, JSON output, all 16 commands | Single-URL score, [free tools](https://geoready.dev/tools/llms-txt-generator/) | Monitoring, score history, regression alerts, agency reporting |
+| **Price** | Free forever | Free forever | From $19/month — [pricing](https://geoready.dev/pricing/) |
+
+</details>
+
+---
+
 ## Is AI citing you? Ask it directly.
 
 `geo citations` sends the questions your customers ask to real answer engines, then reports whether your brand is mentioned, whether your domain is cited as a source, and which competitors are cited instead.
@@ -172,16 +203,17 @@ Two honest caveats, both built into the tool:
 
 | Area | Points | What GEO Optimizer looks for |
 |------|--------|------------------------------|
-| **Robots.txt** | /18 | 27 AI bots across 3 tiers (training, search, user). Citation bots explicitly allowed? |
-| **llms.txt** | /18 | Present, has H1 + blockquote, sections, links, depth. Companion llms-full.txt? |
-| **Schema JSON-LD** | /16 | WebSite, Organization, FAQPage, Article. Schema richness (5+ attributes)? |
-| **Meta Tags** | /14 | Title, description, canonical, Open Graph complete? |
-| **Content** | /12 | H1, statistics, external citations, heading hierarchy, lists/tables, front-loading? |
-| **Brand & Entity** | /10 | Brand name coherence, Knowledge Graph links (Wikipedia/Wikidata/LinkedIn/Crunchbase), about page, topic authority |
-| **Signals** | /6 | `<html lang>`, RSS/Atom feed, dateModified freshness? |
-| **AI Discovery** | /6 | `.well-known/ai.txt`, `/ai/summary.json`, `/ai/faq.json`, `/ai/service.json`? |
+| **Google AI readiness** | /20 | Indexing, snippets, canonical, dates, byline, links, viewport, sitemap, and manual generative-AI control |
+| **Robots.txt** | /14 | Googlebot and citation-bot access; found 3 + citation bots allowed 11 |
+| **Schema JSON-LD** | /14 | Validity, richness, FAQ, Article, Organization, WebSite, and visible name match |
+| **Content** | /14 | H1, statistics, links, word count, heading hierarchy, lists/tables, front-loading, image alt coverage |
+| **Brand & Entity** | /12 | Brand coherence, Knowledge Graph, about/contact, geo identity, topic authority |
+| **Meta Tags** | /11 | Title, description, and Open Graph; canonical is scored by G-CANONICAL |
+| **llms.txt** | /6 | Found, sections, links, and llms-full.txt; useful to other AI agents, ignored by Google Search |
+| **Signals** | /6 | `<html lang>`, RSS/Atom feed, valid freshness |
+| **AI Discovery** | /3 | `ai.txt`, `summary.json`, and markdown negotiation |
 
-**Score bands:** 86–100 Excellent · 68–85 Good · 36–67 Foundation · 0–35 Critical. Every weight is in [`models/config.py`](src/geo_optimizer/models/config.py) — read the rules and disagree with them. Full rubric: [SCORING_RUBRIC.md](SCORING_RUBRIC.md).
+**Score bands:** 86–100 Excellent · 68–85 Good · 36–67 Foundation · 0–35 Critical. Rubric v2 is the default; use `geo audit --score-version 1` for legacy v1 comparisons. Every weight is in [`models/config.py`](src/geo_optimizer/models/config.py). Full rubric: [docs/scoring-rubric.md](docs/scoring-rubric.md).
 
 <details>
 <summary><b>Beyond the score: 10 more checks</b></summary>
@@ -233,7 +265,7 @@ Treat AI visibility like test coverage. The GitHub Action scores your site, fail
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.18.3
+- uses: Auriti-Labs/geo-optimizer-skill@v4.19.0
   with:
     url: https://yoursite.com
     min-score: 70        # fail the build below 70
@@ -329,7 +361,7 @@ The full reasoning behind each signal and weight is written up in the book below
 **AI Search Engineering — A Technical Guide to Generative Engine Optimization (GEO), AI Citations, and Agent-Ready Websites**
 Juan Camilo Auriti · 992 pages · English · 10 September 2026 · ISBN 979-8172934568
 
-**The book explains the reasoning; this engine runs it.** The scoring weights, the eight signal categories, and the evidence classification described in print are the ones implemented in this repository. If you have ever wondered *why* robots.txt is worth 18 points and Signals only 6, the answer is in the book.
+**The book explains the reasoning; this engine runs it.** The scoring weights, the eight signal categories, and the evidence classification described in print are rubric v1, still implemented in this repository and available with `--score-version 1`. Rubric v2, the default, adds a Google AI readiness category built on Google's own documentation.
 
 It treats GEO as an engineering discipline rather than a collection of tricks, organized around the path a page travels before it can be cited. Each stage maps to something you can run here:
 
@@ -344,36 +376,9 @@ It treats GEO as an engineering discipline rather than a collection of tricks, o
 | 7 | Interaction | `/ai/*.json` endpoints, `.well-known/ai.txt` |
 | 8 | Action | WebMCP readiness, prompt-injection detection |
 
-What it covers:
+It covers how answer engines discover and use web content — keeping documented behaviour separate from research findings and inference — auditing crawler access, rendering, and entity signals, engineering content for extraction without "AI-friendly" formulas, and operational GEO workflows for teams and agencies. It is written for developers, technical SEOs, consultants, agencies, product teams, and site owners who want to know what can actually be measured, implemented, and defended in AI search — no guarantees, no invented ranking factors, no hype presented as fact. Full stage-by-stage map of the book against the engine:
 
-- How answer engines discover and use web content, keeping **documented behaviour separate from research findings, observation, inference, and product-specific scoring**
-- Auditing crawler access, robots controls, rendering, structured data, semantic HTML, and entity signals
-- Engineering content for extraction and citation without arbitrary "AI-friendly" formulas
-- Prompt research frameworks for measuring real AI visibility, and tracking citations over time
-- Evaluating `llms.txt`, schema markup, and crawler directives **without overstating what they can do**
-- Operational GEO workflows for teams, agencies, and technical SEO programmes
-- Preparing sites for AI agents, plus prompt injection, content integrity, and agent security
-
-**Appendices:** GEO audits, AI crawlers, JSON-LD templates, prompt research, citation tracking, evidence classification, CI/CD checks, client reporting, terminology, technical references.
-
-**Written for** developers, technical SEOs, consultants, agencies, product teams, and site owners who want to know what can actually be measured, implemented, and defended in AI search. No guarantees, no invented ranking factors, no hype presented as fact — the same standard this engine holds itself to.
-
-[**Paperback on Amazon**](https://www.amazon.it/dp/B0HJGLW5NP) · [**Kindle edition**](https://www.amazon.it/dp/B0H8K319JM) · [Book page](https://geoready.dev/book/)
-
-Not ready to buy? Start with the free 160-page [**GEO Readiness Manual**](https://geoready.dev/geo-readiness-manual/).
-
----
-
-## Open source vs hosted
-
-| | GEO Optimizer (this repo) | [geoready.dev](https://geoready.dev) Free | GeoReady Pro / Studio / Agency |
-|---|---|---|---|
-| **Access** | MIT, runs locally | Web audit, no account | [Self-serve sign-up](https://app.geoready.dev/signup) |
-| **Best for** | Developers, CI/CD, automation | Quick checks, SEO specialists | Ongoing clients, multi-site portfolios |
-| **What you get** | Full engine, JSON output, all 16 commands | Single-URL score, [free tools](https://geoready.dev/tools/llms-txt-generator/) | Monitoring, score history, regression alerts, agency reporting |
-| **Price** | Free forever | Free forever | From $19/month — [pricing](https://geoready.dev/pricing) |
-
-Same engine everywhere. The platform adds what a local CLI cannot: server-side monitoring, history, and team features.
+[**Paperback on Amazon**](https://www.amazon.it/dp/B0HJGLW5NP) · [**Kindle edition**](https://www.amazon.it/dp/B0H8K319JM) · [Book page](https://geoready.dev/book/) · [Free 160-page GEO Readiness Manual](https://geoready.dev/geo-readiness-manual/?utm_source=github&utm_medium=readme&utm_campaign=book)
 
 ---
 
@@ -391,22 +396,37 @@ GEO Optimizer scores **input-side readiness** — the signals that make a site r
 AEO is the practice of structuring a website so AI answer engines — ChatGPT, Perplexity, Google AI Overviews, Gemini, Claude — can find, understand, and cite it as the direct answer to a user's question. It is also called Generative Engine Optimization (GEO), AI SEO, LLM SEO, or AI Search Optimization.
 
 **How do I check if ChatGPT or Perplexity cites my website?**
-Run `geo citations --brand "Your Brand" --domain yoursite.com` with a Perplexity or OpenAI API key. It asks the engine customer-style questions and reports whether your brand is mentioned, whether your domain is cited as a source, and which competitors are cited instead. Perplexity returns real source URLs; OpenAI and Anthropic reveal what the model knows about your brand. No account needed for the [free web version](https://geoready.dev/tools/ai-citation-checker/).
+Run `geo citations --brand "Your Brand" --domain yoursite.com` with a Perplexity or OpenAI API key. It asks the engine customer-style questions and reports whether your brand is mentioned, whether your domain is cited as a source, and which competitors are cited instead. Perplexity returns real source URLs; OpenAI and Anthropic reveal what the model knows about your brand. No account needed for the [free web version](https://geoready.dev/tools/ai-citation-checker/?utm_source=github&utm_medium=readme&utm_campaign=faq).
 
 **Does GEO Optimizer guarantee that AI engines will cite my site?**
 No. It measures the signals that make a site reachable, parseable, and quotable, and it tells you which ones are missing. Whether an engine cites you also depends on the question, the competition, and the engine itself — and answers change from run to run, which is why `geo citations` has `--runs`.
 
 **Is this an llms.txt generator and checker?**
-Yes. `geo llms` generates an `llms.txt` from your sitemap, `--check-drift` flags stale URLs, the audit scores its presence and depth, and the [Astro integration](#astro-integration) creates one at build time. There's also a [free online llms.txt generator](https://geoready.dev/tools/llms-txt-generator/).
+Yes. `geo llms` generates an `llms.txt` from your sitemap, `--check-drift` flags stale URLs, the audit scores its presence and depth, and the [Astro integration](#astro-integration) creates one at build time. There's also a [free online llms.txt generator](https://geoready.dev/tools/llms-txt-generator/?utm_source=github&utm_medium=readme&utm_campaign=faq).
 
 **What is llms.txt, and does it improve AI citations?**
 `llms.txt` is a Markdown file at the root of a site (`/llms.txt`) that gives language models a curated index of its most important pages. It is an organizational signal, not a proven ranking factor: no engine has documented that it improves citations. GEO Optimizer scores it because it is cheap to add and is intended to help AI systems read a site's structure.
 
 **Is it free and open source?**
-Yes — MIT licensed, free forever via `pip install geo-optimizer-skill` or `uvx`. The hosted [GeoReady](https://geoready.dev) platform runs the same engine and adds monitoring, score history, and team features.
+Yes — MIT licensed, free forever via `pip install geo-optimizer-skill` or `uvx`. The hosted [GeoReady](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=faq) platform runs the same engine and adds monitoring, score history, and team features.
 
 **Which AI engines does it cover?**
 27 AI crawlers, including ChatGPT (GPTBot, OAI-SearchBot), Perplexity (PerplexityBot), Claude (ClaudeBot, Claude-SearchBot), and Google (Googlebot, Google-Extended), plus per-platform readiness profiles for ChatGPT, Perplexity, and Google AI Overviews.
+
+**Is it free for commercial use?**
+Yes. The MIT license permits commercial use, modification, and redistribution with no fee and no attribution beyond the license notice. Agencies can run client audits and CI gates with the CLI without any paid plan. The hosted platform is optional and separate.
+
+**Does the CLI send my data anywhere?**
+No. The CLI fetches only the URL you audit and any AI provider you configure with your own API key (`geo citations`). There is no telemetry, no phone-home, and no account requirement — the audit runs entirely on your machine.
+
+**How long does an audit take?**
+A single-URL audit runs in a few seconds. A sitemap batch depends on size and the `--max-urls` cap (default 25). The full test suite of 2,000+ tests runs in CI on every push across Python 3.9–3.13.
+
+**Can I use it in CI/CD?**
+Yes. The GitHub Action fails the build below a score threshold and can emit SARIF findings for the GitHub Security tab. Any CI that runs Python works (GitLab, Jenkins, CircleCI), and `geo drift --fail-on warning` catches regressions between deploys.
+
+**What is the difference between GEO and AEO?**
+Nothing in practice — they are two names for the same discipline. AEO (Answer Engine Optimization) emphasizes the answer engine as the target; GEO (Generative Engine Optimization) is the term used in the peer-reviewed research (KDD 2024). This tool uses both terms because its audience searches for both.
 
 **How is it different from a traditional SEO tool?**
 Traditional SEO tools optimize for Google rankings and backlinks. GEO Optimizer measures AI *citation readiness* — whether answer engines can crawl, parse, and quote your content — using signals (llms.txt, AI-bot access, schema richness, citability, topical authority) that classic SEO tools don't score. Standard technical SEO checks (meta tags, canonical URLs, Open Graph) are audited alongside them.
@@ -421,7 +441,7 @@ Yes. *AI Search Engineering: A Technical Guide to Generative Engine Optimization
 
 ## Roadmap
 
-Focused release waves, not noisy patches: 85 releases since February 2026, currently **v4.18.3**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
+Focused release waves, not noisy patches: 85 releases since February 2026, currently **v4.19.0**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
@@ -457,6 +477,7 @@ GEO Optimizer is built and maintained by [Juan Camilo Auriti](https://www.linked
 
 [![Star on GitHub](https://img.shields.io/github/stars/auriti-labs/geo-optimizer-skill?style=for-the-badge&color=facc15&logo=github&label=Star)](https://github.com/auriti-labs/geo-optimizer-skill/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?style=for-the-badge&logo=GitHub-Sponsors&logoColor=white)](https://github.com/sponsors/auriti)
+[![Free hosted audit](https://img.shields.io/badge/Free_hosted_audit-geoready.dev-0D9488?style=for-the-badge)](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=footer)
 
 **MIT License**
 
