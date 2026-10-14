@@ -22,6 +22,7 @@ Consumers must handle `schema_version` being absent (pre-v1 responses) by treati
 | `score_breakdown` | `object` | Per-category scores (see below) |
 | `score_penalty` | `int` | Web API only. Negative-signal penalty, `0` or below: `score` equals the sum of `score_breakdown` plus `score_penalty`, clamped to 0–100 (so a page whose categories sum to 0 still scores 0). Optional: absent → treat as `0`. The CLI JSON keeps the penalty inside its `score_breakdown` as `negative_penalty` |
 | `recommendations` | `array` | Ordered improvement suggestions |
+| `recommendations_by_category` | `object` | Same strings as `recommendations`, grouped by category (additive, see below) |
 | `http_status` | `int \| null` | HTTP status of the audited URL |
 | `page_size` | `int` | Response body size in bytes |
 | `error` | `string \| null` | Error message if audit failed |
@@ -53,6 +54,49 @@ Always present with 9 categories in v2 (value `0` if audit not run):
 | `ai_discovery` | 3 |
 
 The `google_ai` object contains `points`, `max_points`, and `checks`. Each check has `id`, `status` (`pass`, `warn`, `fail`, or `manual`), `points`, `max_points`, `evidence`, `source_url`, and `evidence_level`.
+
+## `recommendations_by_category`
+
+Additive field under the same `schema_version` (`1`). It carries the strings of `recommendations`, grouped by the category that produced them, so a consumer does not have to infer the category from the wording.
+
+`geo audit --format json` emits the same field with the same semantics.
+
+```json
+{
+  "recommendations": ["Create robots.txt with Allow rules for AI bots (...)", "Add a <title> tag (...)", "..."],
+  "recommendations_by_category": {
+    "robots": ["Create robots.txt with Allow rules for AI bots (...)"],
+    "meta": ["Add a <title> tag (...)"],
+    "other": ["..."]
+  }
+}
+```
+
+Rules:
+
+1. Keys are the `score_breakdown` keys of the result's rubric (`score_max` lists them: nine in rubric v2, eight without `google_ai` in v1), plus two non-scored keys, `blockers` and `other`. Only keys with at least one recommendation are present.
+2. Every string of `recommendations` appears in exactly one list. Taken together as a multiset, the lists equal `recommendations`.
+3. Inside each list the order is the order of `recommendations`. The flat list itself is unchanged.
+4. A critical or high-priority recommendation is filed under the category that produced it, not under a priority bucket.
+5. An empty object with a non-empty `recommendations` means the category is unknown (a result restored from a cache written before this field existed). Treat such strings as uncategorised.
+
+Mapping:
+
+| Key | Recommendations |
+|-----|-----------------|
+| `google_ai` | Failing or warning `[G-*]` checks (rubric v2 only) |
+| `robots` | Create or update robots.txt, aggressive `Crawl-delay` |
+| `llms` | Create `/llms.txt`, sections, links and validation warnings of an existing file |
+| `meta` | `<title>`, canonical, Open Graph, meta description, plus the two critical page-level blocks: `X-Robots-Tag: noindex` and the `noai` meta robots directive |
+| `schema` | JSON-LD parse errors, missing WebSite, Organization, FAQPage, incomplete types, incomplete Product |
+| `content` | H1, word count, heading hierarchy, front-loading, numbers, external links |
+| `brand_entity` | Brand name consistency, `sameAs` links, about link, contact info |
+| `signals` | `lang` attribute, RSS/Atom feed |
+| `ai_discovery` | `/.well-known/ai.txt`, `/ai/summary.json`, `/ai/faq.json`, `/ai/service.json` |
+| `blockers` | Not scored. Issues that keep AI crawlers from reading or trusting the page: the CDN/WAF "blocks AI crawlers" warning, the "Content requires JavaScript to render" warning, the critical prompt-injection items (LLM instructions, HTML comment injection, hidden text) and the critical variant of the user-generated-content injection surface |
+| `other` | Not scored. The non-critical user-generated-content advisory, negative signals, WebMCP, multimodal, and the message of an error result |
+
+Error results from `geo audit` and the web API (`error` is set because the site was unreachable or answered with an HTTP status other than 200/203) have a single recommendation, and `recommendations_by_category` is `{"other": [<that recommendation>]}`, because no category was audited. Results that `core/batch_audit.py` builds for a per-URL timeout or an unexpected exception have both `recommendations` and `recommendations_by_category` empty.
 
 ## `checks` structure
 
