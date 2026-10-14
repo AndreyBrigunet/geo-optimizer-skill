@@ -18,7 +18,7 @@ const faqs = [
   {
     question: 'What is the State of GEO benchmark?',
     answer:
-      'The State of GEO benchmark is a live, anonymized snapshot of how prepared websites are for AI search, measured across sites audited by GeoReady. Every site is scored with the same open-source 100-point, 8-category rubric, so the averages, adoption rates, and biggest gaps reflect one consistent definition of AI search readiness.',
+      'The State of GEO benchmark is a live, anonymized snapshot of how prepared websites are for AI search, measured across sites audited by GeoReady. Every site is scored by the open-source GEO Optimizer engine on a 100-point rubric. The default rubric has nine categories since engine 4.19.0; earlier monthly editions were scored on the eight-category v1 rubric and are labelled as such.',
   },
   {
     question: 'What is a good GEO score?',
@@ -28,7 +28,7 @@ const faqs = [
   {
     question: 'How is AI search readiness measured?',
     answer:
-      'AI search readiness is measured across eight categories: robots.txt and AI crawler access, llms.txt, schema JSON-LD, meta tags, content quality, technical signals, AI discovery files, and brand and entity clarity. Each category contributes to a single 0-100 GEO score using the same open-source engine for every audited site, so results are comparable.',
+      'AI search readiness is measured across nine categories in the current rubric (v2): Google AI readiness, robots.txt and AI crawler access, schema JSON-LD, content quality, brand and entity clarity, meta tags, llms.txt, technical signals, and AI discovery files. Each category contributes to a single 0-100 GEO score using the same open-source engine for every audited site, so results are comparable.',
   },
   {
     question: 'Why does llms.txt matter?',
@@ -112,7 +112,7 @@ const heroVisual = marketingVisuals.commandCenterV2;
           imgClass="aspect-[16/9] object-cover"
           metrics={[
             { label: 'Scope', value: 'Audited sites' },
-            { label: 'Rubric', value: '8 categories' },
+            { label: 'Rubric', value: 'Open, 100 points' },
             { label: 'Privacy', value: 'Anonymized' },
           ]}
         />
@@ -329,7 +329,7 @@ const heroVisual = marketingVisuals.commandCenterV2;
           <li><strong class="text-ink">One row per domain.</strong> Only the most recent audit per domain counts, so re-audits don’t inflate the cohort.</li>
           <li><strong class="text-ink">Scheduled monitoring excluded.</strong> Only user-initiated audits (web, CLI, API, tools) count.</li>
           <li><strong class="text-ink">Aggregated &amp; anonymized.</strong> Domains are stored as salted hashes; this page and its public endpoint expose aggregates only.</li>
-          <li><strong class="text-ink">Same rubric for everyone.</strong> The open-source engine’s 100-point score across 8 categories (robots, llms.txt, schema, meta, content, brand &amp; entity, signals, AI discovery).</li>
+          <li><strong class="text-ink">Same engine for everyone.</strong> The open-source engine’s 100-point score. The current default rubric (v2, since engine 4.19.0) has nine categories: Google AI readiness, robots, schema, content, brand &amp; entity, meta, llms.txt, signals, AI discovery. Audits run on older engine versions used the eight-category v1 rubric.</li>
           <li><strong class="text-ink">Public data is summarized on purpose.</strong> Per-category breakdowns and exact distributions stay internal; the public figures are headline aggregates.</li>
         </ul>
         <p class="mt-4 text-sm">
@@ -415,7 +415,7 @@ const heroVisual = marketingVisuals.commandCenterV2;
       <section class="rounded-[4px] border border-rail bg-white p-6 md:p-8">
         <h2>Beat the benchmark</h2>
         <p class="mt-3">
-          Run a free AI SEO audit to get your GEO score across all eight categories,
+          Run a free AI SEO audit to get your GEO score across all nine categories,
           see your biggest gap, and turn this benchmark into a to-do list. No account
           needed for the baseline snapshot.
         </p>
@@ -476,7 +476,7 @@ const heroVisual = marketingVisuals.commandCenterV2;
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "isAccessibleForFree": true,
         "creator": { "@id": "https://geoready.dev/#organization" },
-        "measurementTechnique": "GEO Optimizer 100-point, 8-category audit (open source)",
+        "measurementTechnique": "GEO Optimizer 100-point audit (open source); nine-category rubric v2 by default since engine 4.19.0, eight-category rubric v1 before",
         "variableMeasured": [
           "Average GEO score (0-100)",
           "Median GEO score (0-100)",

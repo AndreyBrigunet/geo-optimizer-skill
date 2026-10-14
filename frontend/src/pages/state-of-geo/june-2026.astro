@@ -124,7 +124,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
         </div>
 
         <p class="mt-5 text-base leading-relaxed text-ink-soft md:text-lg" itemprop="description">
-          Every June, GeoReady publishes its benchmark of AI search readiness across sites audited with the open-source GEO Optimizer engine. This is the first full edition: <strong class="text-ink">288 unique domains</strong>, scored across 8 categories, 100 points, and a single consistent rubric. The numbers below are the baseline to beat — and the map of where almost every website is still leaving points on the table.
+          Every June, GeoReady publishes its benchmark of AI search readiness across sites audited with the open-source GEO Optimizer engine. This is the first full edition: <strong class="text-ink">288 unique domains</strong>, scored across eight categories (rubric v1), 100 points, and a single consistent rubric. The numbers below are the baseline to beat — and the map of where almost every website is still leaving points on the table.
         </p>
 
         <meta itemprop="datePublished" content={datePublished} />
@@ -223,7 +223,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
                     <td class="px-4 py-3 font-mono tabular-nums">86–100</td>
                     <td class="px-4 py-3 text-right font-mono tabular-nums text-ink">4</td>
                     <td class="px-4 py-3 text-right font-mono font-semibold tabular-nums text-ink">1.4%</td>
-                    <td class="px-4 py-3 text-xs">All 8 categories well covered. Citable by AI with confidence.</td>
+                    <td class="px-4 py-3 text-xs">All categories well covered. Citable by AI with confidence.</td>
                   </tr>
                   <tr>
                     <td class="px-4 py-3 font-semibold text-ink">Good</td>
@@ -267,7 +267,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
         <section>
           <h2>Category breakdown: where every site is winning and losing</h2>
           <p class="mt-4">
-            The GEO rubric scores eight categories. Each has a different maximum. The table below shows the June 2026 average for each, what the maximum is, and the efficiency percentage — how much of the available points the average site is capturing.
+            The v1 GEO rubric used for this edition scores eight categories (the current default, v2, has nine since engine 4.19.0). Each has a different maximum. The table below shows the June 2026 average for each, what the maximum is, and the efficiency percentage — how much of the available points the average site is capturing.
           </p>
 
           <div class="mt-6 overflow-hidden rounded-[4px] border border-rail bg-white">
@@ -512,7 +512,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
         <section class="rounded-[4px] border border-rail bg-white p-6 md:p-8">
           <h2>See where your site stands against the June 2026 benchmark</h2>
           <p class="mt-3">
-            The average score in June 2026 is 53.6. Run a free audit to see your GEO score across all eight categories, identify which band you are in, and get the specific actions that recover the most points first.
+            The average score in June 2026 is 53.6. Run a free audit to see your GEO score across all nine categories, identify which band you are in, and get the specific actions that recover the most points first.
           </p>
           <div class="mt-6 flex flex-col gap-3 sm:flex-row">
             <a
@@ -539,7 +539,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
             This report covers {stats.domains} unique domains audited by GeoReady between 10 June and 30 June 2026. When a domain was audited multiple times in the period, only the most recent audit is included — this prevents repeat users from inflating the cohort size and ensures each domain appears once at its best-known state.
           </p>
           <ul class="mt-4 space-y-2 list-disc pl-5 text-sm">
-            <li><strong class="text-ink">Engine version:</strong> GEO Optimizer 4.12.x, the open-source 100-point, 8-category rubric. <a href="https://github.com/Auriti-Labs/geo-optimizer-skill" target="_blank" rel="noopener noreferrer" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">Source available on GitHub</a>.</li>
+            <li><strong class="text-ink">Engine version:</strong> GEO Optimizer 4.12.x, the open-source 100-point, eight-category v1 rubric (the default before engine 4.19.0). <a href="https://github.com/Auriti-Labs/geo-optimizer-skill" target="_blank" rel="noopener noreferrer" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">Source available on GitHub</a>.</li>
             <li><strong class="text-ink">Audited sample:</strong> Sites that chose to audit with GeoReady — not a random sample of the web. The cohort skews toward teams already interested in AI visibility, so these figures likely overestimate average readiness across all websites.</li>
             <li><strong class="text-ink">Anonymized:</strong> Domain names are stored as salted HMAC-SHA256 hashes in the benchmark dataset. No individual domain is identifiable in the public figures.</li>
             <li><strong class="text-ink">Monitoring audits excluded:</strong> Only user-initiated audits (web, API, CLI) are included. Scheduled monitoring re-checks are excluded to avoid inflating the cohort with the same domains audited repeatedly.</li>
@@ -577,7 +577,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
         <section class="rounded-[4px] border border-rail bg-white p-6 md:p-8">
           <h2>Beat the June 2026 average of 53.6</h2>
           <p class="mt-3">
-            Run a free AI SEO audit to get your full GEO score, see which of the 8 categories is costing you the most points, and get a ranked action list. No account required for the baseline snapshot.
+            Run a free AI SEO audit to get your full GEO score, see which of the nine categories is costing you the most points, and get a ranked action list. No account required for the baseline snapshot.
           </p>
           <div class="mt-6 flex flex-col gap-3 sm:flex-row">
             <a
@@ -660,7 +660,7 @@ const SAMPLE_NOTE = 'n = 288 · 10–30 Jun 2026';
           "name": "GeoReady / Auriti Labs",
           "url": "https://geoready.dev"
         },
-        "measurementTechnique": "GEO Optimizer 100-point, 8-category audit engine (open source). One row per unique domain, most recent audit per domain.",
+        "measurementTechnique": "GEO Optimizer 100-point, eight-category (rubric v1) audit engine (open source). One row per unique domain, most recent audit per domain.",
         "variableMeasured": [
           `Average GEO score: ${stats.avgScore}/100`,
           `Median GEO score: ${stats.median}/100`,
