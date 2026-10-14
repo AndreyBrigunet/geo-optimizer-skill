@@ -5,20 +5,21 @@ import StatsBar from '../components/StatsBar';
 import { getBenchmark } from '../utils/benchmark';
 import { getPublicStats } from '../utils/publicStats';
 
-// Gli otto pesi di scoring, come pubblicati in models/config.py (SCORING).
-// Sono qui perché la pagina rivendica "auditable scoring": affermarlo e non mostrarlo
-// è la stessa opacità che il prodotto critica. Tenere allineato ai pesi reali.
+// I nove pesi della rubrica v2 (default dalla 4.19.0), come in models/config.py
+// (CATEGORY_MAX_V2). Sono qui perché la pagina rivendica "auditable scoring": affermarlo
+// e non mostrarlo è la stessa opacità che il prodotto critica. Tenere allineato ai pesi reali.
 // La quarta colonna è la chiave di categoria dello score_breakdown JSON: è l'ID
 // che il rail dei gate mostra come annotazione, quindi deve restare quella vera.
 const SCORING_WEIGHTS = [
-  ['Robots.txt', 18, 'Whether citation crawlers are allowed to fetch the site at all.', 'robots'],
-  ['llms.txt', 18, 'Presence and depth of the root-level orientation file, including llms-full.txt.', 'llms'],
-  ['Schema JSON-LD', 16, 'Valid structured data: Organization, WebSite, Article, FAQ.', 'schema'],
-  ['Meta tags', 14, 'Title, description, canonical, and Open Graph completeness.', 'meta'],
-  ['Content', 12, 'Heading hierarchy, word count, lists, front-loaded answers.', 'content'],
+  ['Google AI readiness', 20, 'Indexable page, snippet controls, canonical, dates, byline, crawlable links, viewport, sitemap.', 'google_ai'],
+  ['Robots.txt', 14, 'Whether citation crawlers are allowed to fetch the site at all.', 'robots'],
+  ['Schema JSON-LD', 14, 'Valid structured data: Organization, WebSite, Article, FAQ.', 'schema'],
+  ['Content', 14, 'Heading hierarchy, word count, lists, front-loaded answers, image alt text.', 'content'],
+  ['Brand & entity', 12, 'Naming coherence, Knowledge Graph readiness, topic authority.', 'brand_entity'],
+  ['Meta tags', 11, 'Title, description, canonical, and Open Graph completeness.', 'meta'],
+  ['llms.txt', 6, 'Presence and depth of the root-level orientation file, including llms-full.txt.', 'llms'],
   ['Signals', 6, 'Declared language, feed availability, freshness date.', 'signals'],
-  ['AI discovery', 6, 'The .well-known/ai.txt and /ai/*.json endpoints.', 'ai_discovery'],
-  ['Brand & entity', 10, 'Naming coherence, Knowledge Graph readiness, topic authority.', 'brand_entity'],
+  ['AI discovery', 3, 'The .well-known/ai.txt and /ai/*.json endpoints.', 'ai_discovery'],
 ] as const;
 
 // Aggregati della coorte, letti a build time da GET /api/public/benchmark: erano
@@ -49,7 +50,7 @@ const projectChecks = [
   {
     title: 'Auditable scoring',
     desc: 'Every signal is traceable to a published rule. Score breakdowns show per-category contributions.',
-    source: 'models/config.py · SCORING',
+    source: 'models/config.py · CATEGORY_MAX_V2',
     link: null,
   },
   {
@@ -104,7 +105,7 @@ const faqs = [
   },
   {
     q: 'What does GeoReady check?',
-    a: 'GeoReady audits 8 categories: robots.txt, llms.txt, JSON-LD schema, meta tags, content quality, technical signals, AI discovery paths, and brand entity signals. It also detects prompt injection patterns and negative signals through the same open-source GEO Optimizer engine. The CLI additionally offers Agent Access Audit (bot vs browser access simulation via `geo access`) and AI Crawler Activity Analytics (server log parsing via `geo logs`).',
+    a: 'GeoReady audits 9 categories: Google AI readiness, robots.txt, JSON-LD schema, content quality, brand entity signals, meta tags, llms.txt, technical signals, and AI discovery paths. It also detects prompt injection patterns and negative signals through the same open-source GEO Optimizer engine. The CLI additionally offers Agent Access Audit (bot vs browser access simulation via `geo access`) and AI Crawler Activity Analytics (server log parsing via `geo logs`).',
   },
   {
     q: 'How is GEO different from traditional SEO?',
@@ -188,7 +189,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
   description="Free AI visibility audit plus paid GEO monitoring. Check if ChatGPT, Perplexity, Claude, and Gemini can reach and cite your site, then track changes."
   canonical="https://geoready.dev/"
 >
-  {/* Hero — the trigger console and the eight-gate rail */}
+  {/* Hero — the trigger console and the nine-gate rail */}
   <section id="audit-form" data-hero-bleed class="world-console bg-paper font-text text-ink">
     <div class="mx-auto max-w-7xl px-6 pt-14 pb-16 md:pt-20 md:pb-20">
       <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)] lg:items-start">
@@ -201,7 +202,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
             Buyers ask ChatGPT, Perplexity, Claude, and Gemini before they click a search result.
             GeoReady is a Generative Engine Optimization (GEO) platform that verifies your URL can be
             reached, understood, and cited by those answer engines, gives you a 0-100 score and
-            prioritized fixes across 8 signal categories, then re-checks
+            prioritized fixes across 9 signal categories, then re-checks
             weekly, so you see whether your visibility improves or regresses over time.
           </p>
 
@@ -277,13 +278,13 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
         </aside>
       </div>
 
-      {/* The eight gates, with their published weights */}
+      {/* The nine gates, with their published weights */}
       <div class="mt-14">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 class="font-head text-xl font-extrabold tracking-[-0.02em]">The eight gates every audit runs</h2>
-          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · SCORING · Σ = 100 pts</p>
+          <h2 class="font-head text-xl font-extrabold tracking-[-0.02em]">The nine gates every audit runs</h2>
+          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · CATEGORY_MAX_V2 · Σ = 100 pts</p>
         </div>
-        <ol class="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2 lg:grid-cols-4">
+        <ol class="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2 lg:grid-cols-3">
           {SCORING_WEIGHTS.map(([name, points, what, key], i) => (
             <li class="gate bg-white" style={`--i:${i}`}>
               <details class="group">
@@ -368,7 +369,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
             <span class="mr-2 font-mono text-[12px] font-medium tabular-nums text-ink-mute align-middle">2</span>Get a GEO score
           </h3>
           <p class="mt-2 max-w-3xl leading-relaxed text-ink-soft">
-            The scan evaluates eight signal categories and returns a 0-100 score with a
+            The scan evaluates nine signal categories and returns a 0-100 score with a
             per-category breakdown. These are the published weights, the same numbers the
             open-source engine uses, so any score can be recomputed by hand:
           </p>
