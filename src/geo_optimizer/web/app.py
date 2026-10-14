@@ -1544,6 +1544,10 @@ def _audit_result_to_dict(result) -> dict:
     breakdown_keys = result.score_max or CATEGORY_MAX
     base["score_breakdown"] = {k: base.get("score_breakdown", {}).get(k, 0) for k in breakdown_keys}
     base["score_max"] = dict(breakdown_keys)
+    # score_breakdown elenca solo le categorie della rubrica (contratto JSON): la
+    # penalità per segnali negativi restava invisibile e la somma delle categorie
+    # non tornava con score. Chiave top-level opzionale, valore <= 0.
+    base["score_penalty"] = (result.score_breakdown or {}).get("negative_penalty", 0)
 
     # Add the "checks" mapping (structure expected by the frontend and platform)
     # Keys under checks must match gate_service.CATEGORY_KEY_MAP and analytics_dashboard
@@ -2400,6 +2404,11 @@ async def analyze_logs(request: Request):
             detail="Missing or invalid authentication token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    # Unico POST senza rate limit: accetta upload fino a 10 MB e li analizza in un
+    # thread, quindi senza limite un singolo client poteva saturare CPU e disco.
+    # Il controllo avviene prima di leggere il body.
+    if not await _check_rate_limit(_get_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Too many requests. Try again soon.")
 
     try:
         form = await request.form()
