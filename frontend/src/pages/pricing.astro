@@ -41,7 +41,7 @@ const selfServePlans = [
       'Unlimited audits',
       '1 domain, weekly monitoring',
       '30-audit score history',
-      'Regression alerts (when your score moves by 5 points or more)',
+      'Regression alerts by email (when your score drops by 5 points or more)',
       'PDF export',
       'API access (Bearer token)',
     ],
@@ -244,12 +244,12 @@ const cliVsProRows = [
   [
     'When the score drops',
     'geo audit --regression exits with code 1 and prints a message when the score is lower than the previous saved snapshot. Anything beyond that, such as who gets told, is up to your CI.',
-    'An alert when your score moves by 5 points or more.',
+    'An email alert when your score drops by 5 points or more.',
   ],
 ] as const;
 
 const cliVsProAnswer =
-  'If you already run the CLI in CI, you may not need Pro. geo track and geo monitor use the same open-source audit engine, store snapshots in a local SQLite file (~/.geo-optimizer/tracking.db), and run only when you start them, so the schedule, the storage and reading the output are yours to set up. Pro is for people who would rather not operate that: the audit runs weekly for one domain, history is kept in your account, and a score move of 5 points or more triggers an alert.';
+  'If you already run the CLI in CI, you may not need Pro. geo track and geo monitor use the same open-source audit engine, store snapshots in a local SQLite file (~/.geo-optimizer/tracking.db), and run only when you start them, so the schedule, the storage and reading the output are yours to set up. Pro is for people who would rather not operate that: the audit runs weekly for one domain, history is kept in your account, and a score drop of 5 points or more triggers an email alert.';
 
 const faqs = [
   {
@@ -282,7 +282,7 @@ const faqs = [
   },
   {
     q: 'Will the CLI remain open source?',
-    a: 'Yes. The CLI (geo-optimizer-skill on PyPI) is MIT-licensed and will remain free forever. SaaS plans add server-side continuity features the CLI cannot provide on its own.',
+    a: 'Yes. The CLI (geo-optimizer-skill on PyPI) is MIT-licensed and will remain free forever. SaaS plans add what the CLI leaves for you to run: the schedule, the stored history and the alerts.',
   },
   {
     q: 'Is there a free trial for paid plans?',
@@ -705,7 +705,7 @@ const heroCadenceRows = [
             {[
               'Weekly monitoring: score tracked automatically',
               'Score history: 30 audits, see trends over time',
-              'Regression alerts: notified when your score moves by 5 points or more',
+              'Regression alerts: an email when your score drops by 5 points or more',
               'PDF export + API access (Bearer token)',
             ].map((f) => (
               <li class="flex items-start gap-2.5">
@@ -1132,7 +1132,7 @@ const heroCadenceRows = [
           {
             "@type": "Question",
             "name": "Will the CLI remain open source?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. The CLI (geo-optimizer-skill on PyPI) is MIT-licensed and will remain free forever. SaaS plans add server-side continuity features the CLI cannot provide on its own." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. The CLI (geo-optimizer-skill on PyPI) is MIT-licensed and will remain free forever. SaaS plans add what the CLI leaves for you to run: the schedule, the stored history and the alerts." }
           },
           {
             "@type": "Question",
