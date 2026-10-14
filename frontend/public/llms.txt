@@ -28,7 +28,7 @@ Rubric v2 is the default since GEO Optimizer 4.19.0 and has nine categories. The
 
 6. **Meta Tags** (max 11 pts): title, meta description, and Open Graph tags. The canonical check moved to Google AI readiness in v2.
 
-7. **llms.txt** (max 6 pts): presence and quality of the llms.txt standard. The GEO Optimizer engine checks for headings, description, sections, links, and the companion llms-full.txt. llms.txt is useful to other AI agents; Google Search ignores it.
+7. **llms.txt** (max 6 pts): presence and quality of the llms.txt standard. The GEO Optimizer engine checks for headings, description, sections, links, and the companion llms-full.txt. llms.txt is useful to other AI agents; Google states that its AI features do not use it.
 
 8. **Technical Signals** (max 6 pts): HTML lang attribute, RSS/Atom feed, and freshness indicators (dateModified in schema or article:modified_time meta tag).
 
