@@ -70,33 +70,43 @@ export const manifestoSections: ManifestoSection[] = [
   {
     id: 'eight-signals',
     number: '04',
-    title: 'The eight signals that determine AI visibility.',
-    intro: 'The maximum score is 100, distributed across eight documented signal categories.',
+    title: 'The nine signals that determine AI visibility.',
+    intro: 'The maximum score is 100, distributed across nine documented signal categories (rubric v2, the default since engine 4.19.0).',
     items: [
+      {
+        title: 'Google AI readiness',
+        description: 'The technical conditions Google documents for its search and AI features: an indexable page, snippet controls, a single canonical, consistent dates, a byline, crawlable links, a viewport tag, and a declared sitemap.',
+        points: ['Max 20 points'],
+      },
       {
         title: 'robots.txt',
         description: 'Authorize AI crawlers such as OAI-SearchBot, ClaudeBot, Claude-SearchBot, and PerplexityBot.',
-        points: ['Max 18 points'],
-      },
-      {
-        title: 'llms.txt',
-        description: 'Machine-readable standard proposed by Answer.AI; full score with a comprehensive document and llms-full.txt version.',
-        points: ['Max 18 points'],
+        points: ['Max 14 points'],
       },
       {
         title: 'Schema JSON-LD',
         description: 'Structured data for FAQ, Article, Organization, and WebSite schemas, with sameAs links.',
-        points: ['Max 16 points'],
-      },
-      {
-        title: 'Meta Tags',
-        description: 'Descriptive title, accurate summary, canonical URL, and social sharing tags.',
         points: ['Max 14 points'],
       },
       {
         title: 'Content Quality',
-        description: 'Concrete numbers, H2/H3 heading hierarchy, information in the first parts of the text, lists and tables, sufficient minimum length.',
+        description: 'Concrete numbers, H2/H3 heading hierarchy, information in the first parts of the text, lists and tables, sufficient minimum length, image alt text.',
+        points: ['Max 14 points'],
+      },
+      {
+        title: 'Brand & Entity Signals',
+        description: 'Brand name consistency, links to external knowledge graphs, contact pages, and geographic information.',
         points: ['Max 12 points'],
+      },
+      {
+        title: 'Meta Tags',
+        description: 'Descriptive title, accurate summary, and social sharing tags.',
+        points: ['Max 11 points'],
+      },
+      {
+        title: 'llms.txt',
+        description: 'Machine-readable standard proposed by Answer.AI; useful to AI agents, ignored by Google Search. Full score with a sectioned document and an llms-full.txt version.',
+        points: ['Max 6 points'],
       },
       {
         title: 'Technical Signals',
@@ -105,13 +115,8 @@ export const manifestoSections: ManifestoSection[] = [
       },
       {
         title: 'AI Discovery',
-        description: 'Paths such as /.well-known/ai.txt, /ai/summary.json, /ai/faq.json, /ai/service.json.',
-        points: ['Max 6 points'],
-      },
-      {
-        title: 'Brand & Entity Signals',
-        description: 'Brand name consistency, links to external knowledge graphs, contact pages, and geographic information.',
-        points: ['Max 10 points'],
+        description: 'Paths such as /.well-known/ai.txt and /ai/summary.json, plus markdown content negotiation.',
+        points: ['Max 3 points'],
       },
     ],
   },

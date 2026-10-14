@@ -23,7 +23,7 @@ export const researchSources: ResearchSource[] = [
     finding:
       'Coined the term GEO and introduced GEO-bench (10,000 queries across 9 domains). Tested 9 content strategies and showed that adding quotations, statistics, and cited sources measurably raises how much of an answer a source contributes. The headline gains are a relative maximum on one metric (position-adjusted word count) and are measured with the source already present in the model’s context.',
     howWeUseIt:
-      'The 8-category scoring engine (robots.txt, llms.txt, schema, meta, content, signals, AI discovery, brand entity) and the citability suite are derived from this signal taxonomy. Direct quotations and concrete statistics carry the most weight in the content checks.',
+      'The scoring engine’s categories (robots.txt, llms.txt, schema, meta, content, signals, AI discovery, brand entity) and the citability suite are derived from this signal taxonomy. The Google AI readiness category follows Google’s own published documentation instead. Direct quotations and concrete statistics carry the most weight in the content checks.',
     link: 'https://arxiv.org/abs/2311.09735',
     linkLabel: 'Read paper',
     metrics: [
@@ -185,7 +185,7 @@ export const researchSources: ResearchSource[] = [
     finding:
       'Across audited sites, valid JSON-LD (Organization, WebSite, Article) correlates with a ~28-point higher average GEO score than sites with none — consistent with structural signals mattering more than copy tactics in the published benchmarks.',
     howWeUseIt:
-      'Drives the Schema JSON-LD scoring category (max 16 points) and the structured-data fixer that generates complete @context + @type + sameAs blocks.',
+      'Drives the Schema JSON-LD scoring category (max 14 points in rubric v2, 16 in v1) and the structured-data fixer that generates complete @context + @type + sameAs blocks.',
     link: 'https://geoready.dev/state-of-geo/',
     linkLabel: 'See the benchmark data',
   },
@@ -211,7 +211,7 @@ export const researchSources: ResearchSource[] = [
     finding:
       'On-page and technical factors that influence whether an AI system selects a source: crawlability, passage-level structure, entity resolution, and freshness — the same levers the factorial and audit studies identify as reproducible.',
     howWeUseIt:
-      'Mapped into the 8 scoring categories and the technical-signal checks (X-Robots-Tag, noai directives, crawl-delay, canonical, HTTPS).',
+      'Mapped into the scoring categories and the technical-signal checks (X-Robots-Tag, noai directives, crawl-delay, canonical, HTTPS).',
     linkLabel: 'Internal analysis',
   },
 ];

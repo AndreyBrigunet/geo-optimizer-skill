@@ -13,12 +13,13 @@ import Shell from '../components/Shell.astro';
 // altrui che non sia una constatazione di cosa è pubblicato e cosa non lo è.
 
 // Fatti verificati il 2026-08-31 contro il repository e il pacchetto pubblicato.
+// Il blocco sui pesi (rubric v2, nove categorie) è stato riallineato a config.py il 2026-10-14.
 const VERIFIABLE = [
   {
     claim: 'The scoring weights are constants you can read',
     detail:
-      'All 100 points live in SCORING in src/geo_optimizer/models/config.py as plain integers — 40 named keys across 8 categories. Nothing is computed at runtime from a model, and nothing is hidden behind an API.',
-    check: 'Open config.py and add the numbers up. They sum to 100.',
+      'All 100 points live in src/geo_optimizer/models/config.py as plain integers: the nine category maxima in CATEGORY_MAX_V2, and the per-check weights in SCORING_V2 and GOOGLE_AI_POINTS. Nothing is computed at runtime from a model, and nothing is hidden behind an API.',
+    check: 'Open config.py and add the numbers up. The nine category maxima sum to 100.',
   },
   {
     claim: 'The whole engine is MIT licensed',
@@ -75,7 +76,7 @@ const faqs = [
   {
     question: 'How is the AI visibility score calculated?',
     answer:
-      'Eight categories sum to 100: robots.txt 18, llms.txt 18, schema JSON-LD 16, meta tags 14, content 12, brand and entity 10, technical signals 6, AI discovery 6. Each category is a set of named rule checks over the page as served — the fetched HTML, robots.txt, llms.txt and JSON-LD. Crawlability and orientation files carry the most weight because they gate everything downstream: if a bot cannot fetch the page, content quality never gets a chance to count. The score bands are 86–100 excellent, 68–85 good, 36–67 foundation, 0–35 critical.',
+      'Nine categories sum to 100 in rubric v2, the default since engine 4.19.0: Google AI readiness 20, robots.txt 14, schema JSON-LD 14, content 14, brand and entity 12, meta tags 11, llms.txt 6, technical signals 6, AI discovery 3. Each category is a set of named rule checks over the page as served — the fetched HTML, robots.txt, llms.txt and JSON-LD. Access and indexing conditions carry the most weight because they gate everything downstream: if a bot cannot fetch an indexable page, content quality never gets a chance to count. The earlier eight-category v1 rubric is still available with --score-version 1. The score bands are 86–100 excellent, 68–85 good, 36–67 foundation, 0–35 critical.',
   },
   {
     question: 'Can I reproduce the score myself, without an account?',
@@ -94,16 +95,17 @@ const faqs = [
   },
 ];
 
-// Righe della tabella "Where the 100 points go" — gli stessi interi di config.py.
+// Righe della tabella "Where the 100 points go" — gli stessi interi di CATEGORY_MAX_V2 in config.py.
 const WEIGHT_ROWS = [
-  ['robots.txt', 18, 'Gates everything downstream — an unreachable page is never scored on anything else.'],
-  ['llms.txt', 18, 'Points AI systems at the URLs worth citing instead of leaving them to guess.'],
-  ['Schema JSON-LD', 16, 'Lets an engine pull facts with confidence rather than by inference.'],
-  ['Meta tags', 14, 'Keeps the page identifiable and free of duplication when indexed.'],
-  ['Content', 12, 'Structure that makes individual passages quotable on their own.'],
-  ['Brand & entity', 10, 'Ties a set of pages to one recognisable entity.'],
+  ['Google AI readiness', 20, 'The technical conditions Google documents for its search and AI features: an indexable page, snippet controls, one canonical, consistent dates, a byline, crawlable links, a viewport tag and a declared sitemap.'],
+  ['robots.txt', 14, 'Gates everything downstream — an unreachable page is never scored on anything else.'],
+  ['Schema JSON-LD', 14, 'Lets an engine pull facts with confidence rather than by inference.'],
+  ['Content', 14, 'Structure that makes individual passages quotable on their own.'],
+  ['Brand & entity', 12, 'Ties a set of pages to one recognisable entity.'],
+  ['Meta tags', 11, 'Keeps the page identifiable when indexed: title, description and Open Graph.'],
+  ['llms.txt', 6, 'Points AI agents at the URLs worth citing instead of leaving them to guess. Google states that its AI features do not use this file.'],
   ['Technical signals', 6, 'Language, RSS and freshness cues about how maintained the source is.'],
-  ['AI discovery', 6, 'Machine-readable endpoints that expose the site to AI tooling directly.'],
+  ['AI discovery', 3, 'Machine-readable endpoints that expose the site to AI tooling directly.'],
 ] as const;
 ---
 
@@ -168,7 +170,7 @@ const WEIGHT_ROWS = [
     <section class="mt-12">
       <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <h2 class="font-head text-xl font-extrabold tracking-[-0.02em] text-ink">Where the 100 points go</h2>
-        <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">source: src/geo_optimizer/models/config.py · SCORING</p>
+        <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">source: src/geo_optimizer/models/config.py · CATEGORY_MAX_V2</p>
       </div>
       <p class="mt-2 max-w-3xl text-sm leading-relaxed text-ink-soft">
         These are the same integers you will find in
@@ -260,7 +262,7 @@ geo audit --url https://your-site.com</code></pre>
     "author": { "@id": "https://geoready.dev/#organization" },
     "publisher": { "@id": "https://geoready.dev/#organization" },
     "datePublished": "2026-08-12",
-    "dateModified": "2026-08-31",
+    "dateModified": "2026-10-14",
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": "https://geoready.dev/transparent-geo-tool/"

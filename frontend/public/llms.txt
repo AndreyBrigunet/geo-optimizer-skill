@@ -1,6 +1,6 @@
 # GeoReady
 
-> AI visibility audit and monitoring platform built on the open-source GEO Optimizer engine. Score 0-100 based on 8 scoring categories derived from published research (Princeton KDD 2024; AutoGEO, arXiv:2510.11438 preprint).
+> AI visibility audit and monitoring platform built on the open-source GEO Optimizer engine. Score 0-100 across 9 scoring categories (rubric v2); the signals are derived from published research (Princeton KDD 2024; AutoGEO, arXiv:2510.11438 preprint) and from Google's documentation for search and AI features.
 
 GeoReady helps developers, SEOs, and content teams measure and improve how discoverable, readable, and citable their websites are to AI answer engines such as ChatGPT, Perplexity, Claude, and Gemini.
 
@@ -14,21 +14,25 @@ The GEO Optimizer engine translates the academic research on GEO into GeoReady's
 
 ## Scoring categories (max 100 points)
 
-1. **robots.txt** (max 18 pts): presence and correct configuration for 27 AI crawlers including GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Bytespider, meta-externalagent, xAI-Bot, and others. A misconfigured robots.txt can silently block AI crawlers from indexing your content.
+Rubric v2 is the default since GEO Optimizer 4.19.0 and has nine categories. The earlier eight-category v1 rubric is still available with `geo audit --score-version 1`. Full weights: https://geoready.dev/methodology/ and https://geoready.dev/docs/scoring-rubric/
 
-2. **llms.txt** (max 18 pts): presence and quality of the llms.txt standard. This file gives AI systems a structured, human-readable summary of your site. The GEO Optimizer engine checks for headings, description, sections, links, word depth, and companion files.
+1. **Google AI readiness** (max 20 pts): the technical conditions Google documents for its search and AI features: indexable page (final status 200, no noindex, Googlebot not blocked), snippet controls, a single canonical URL matching the final URL, visible dates consistent with structured data, a byline, crawlable internal links, a viewport tag, and a Sitemap declared in robots.txt.
 
-3. **Schema JSON-LD** (max 16 pts): structured data markup per Schema.org. Checks for Organization, WebSite, WebApplication, FAQPage, and Article types. Validates required fields and measures attribute richness. Rich schemas with 5+ attributes correlate with higher AI citation rates.
+2. **robots.txt** (max 14 pts): presence and configuration for AI crawlers including GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Bytespider, meta-externalagent, xAI-Bot, and others. A misconfigured robots.txt can silently block AI crawlers from reading your content.
 
-4. **Meta Tags** (max 14 pts): title, meta description, canonical URL, and Open Graph tags. These provide the AI with unambiguous, authoritative source metadata.
+3. **Schema JSON-LD** (max 14 pts): structured data markup per Schema.org. Checks for Organization, WebSite, FAQPage, and Article types, validates required fields and measures attribute richness, and checks that the schema name or headline appears in the visible text.
 
-5. **Content Quality** (max 12 pts): heading hierarchy, use of concrete numbers, presence of lists and tables, word count, and front-loaded answer structure. AI systems prefer content that delivers the answer immediately before the context.
+4. **Content Quality** (max 14 pts): heading hierarchy, concrete numbers, lists and tables, word count, front-loaded answer structure, and image alt text coverage. AI systems tend to prefer content that delivers the answer before the context.
 
-6. **Technical Signals** (max 6 pts): HTML lang attribute, RSS/Atom feed, and freshness indicators (dateModified in schema or article:modified_time meta tag). Freshness signals help AI engines prefer recently updated content.
+5. **Brand & Entity Signals** (max 12 pts): brand name consistency across title, H1, og:title, and Organization schema; Knowledge Graph readiness (sameAs links to Wikipedia, Wikidata, LinkedIn, Crunchbase); visible /about link; Organization contactPoint; geographic identity; and topic authority via FAQ depth.
 
-7. **AI Discovery** (max 6 pts): presence of /.well-known/ai.txt, /ai/summary.json, /ai/faq.json, and /ai/service.json. These machine-readable endpoints let AI agents understand your site's purpose and capabilities without crawling all pages.
+6. **Meta Tags** (max 11 pts): title, meta description, and Open Graph tags. The canonical check moved to Google AI readiness in v2.
 
-8. **Brand & Entity Signals** (max 10 pts): brand name consistency across title, H1, og:title, and Organization schema; Knowledge Graph readiness (sameAs links to Wikipedia, Wikidata, LinkedIn, Crunchbase); visible /about link; Organization contactPoint; geographic identity; and topic authority via FAQ depth.
+7. **llms.txt** (max 6 pts): presence and quality of the llms.txt standard. The GEO Optimizer engine checks for headings, description, sections, links, and the companion llms-full.txt. llms.txt is useful to other AI agents; Google states that its AI features do not use it.
+
+8. **Technical Signals** (max 6 pts): HTML lang attribute, RSS/Atom feed, and freshness indicators (dateModified in schema or article:modified_time meta tag).
+
+9. **AI Discovery** (max 3 pts): presence of /.well-known/ai.txt, /ai/summary.json, and markdown content negotiation. These machine-readable endpoints let AI agents understand your site's purpose without crawling all pages.
 
 ## Additional diagnostic checks (no score impact)
 
@@ -54,7 +58,7 @@ The GEO Optimizer engine translates the academic research on GEO into GeoReady's
 
 Install: `pip install geo-optimizer-skill`
 
-- `geo audit --url <URL>`: full GEO audit with 8-category score and recommendations
+- `geo audit --url <URL>`: full GEO audit with nine-category score and recommendations
 - `geo audit --url <URL> --format json`: machine-readable JSON output for CI/CD pipelines
 - `geo audit --url <URL> --format html`: standalone HTML report
 - `geo fix --url <URL>`: generate fix files (robots.txt, llms.txt, JSON-LD schema)
@@ -175,7 +179,7 @@ The GEO Optimizer engine is actively maintained. Scoring weights and audit metho
 - [What Is WebMCP? The Next Layer of AI Discovery](https://geoready.dev/guides/what-is-webmcp/): WebMCP lets a page declare interactive tools for AI agents, not just content.
 - [How Claude Cites Sources: What We Know So Far](https://geoready.dev/guides/how-claude-cites-sources/): ClaudeBot, Claude-SearchBot, and Claude-User do different jobs.
 - [How Google Gemini and AI Mode Cite Sources](https://geoready.dev/guides/gemini-ai-mode-citations/): Gemini the assistant and Google AI Overviews are different products.
-- [GEO for Agencies: Auditing and Reporting AI Visibility for Clients](https://geoready.dev/guides/geo-for-agencies/): How to add AI-visibility audits to an existing SEO retainer: what to check, how to translate an 8-category score into a client report, and how to price it as a recurring line.
+- [GEO for Agencies: Auditing and Reporting AI Visibility for Clients](https://geoready.dev/guides/geo-for-agencies/): How to add AI-visibility audits to an existing SEO retainer: what to check, how to translate a nine-category score into a client report, and how to price it as a recurring line.
 - [AEO vs GEO: same practice, different vocabulary?](https://geoready.dev/guides/aeo-vs-geo/): AEO and GEO both mean optimizing content for AI answer engines.
 - [GEO Prompt Research: How to Find the Prompts Your Buyers Actually Ask AI Engines](https://geoready.dev/guides/geo-prompt-research/): Keyword research targets queries; GEO targets prompts.
 - [What is Answer Engine Optimization (AEO)?](https://geoready.dev/guides/what-is-answer-engine-optimization/): Answer Engine Optimization (AEO) means structuring content so AI answer engines can extract, trust, and cite it.
@@ -218,12 +222,12 @@ GeoReady (app.geoready.dev) is the commercial monitoring platform built on GEO O
 
 ### GeoReady Plans
 
-- **Free** — unlimited single audits, 0-100 GEO score, 8-category breakdown, actionable recommendations
+- **Free** — unlimited single audits, 0-100 GEO score, nine-category breakdown, actionable recommendations
 - **Pro** — continuous monitoring, weekly audits, score history, regression alerts, PDF export
 - **Studio** — team workspaces, multi-site monitoring, white-label reports
 - **Agency** — client management, bulk audits, priority support
 
-GeoReady is built on the same scoring engine as GEO Optimizer. Every audit on geoready.dev uses the same 8-category scoring methodology, the same 47 citability methods, and the same research foundation.
+GeoReady is built on the same scoring engine as GEO Optimizer. Every audit on geoready.dev uses the same nine-category scoring methodology, the same 47 citability methods, and the same research foundation.
 
 ### Access
 

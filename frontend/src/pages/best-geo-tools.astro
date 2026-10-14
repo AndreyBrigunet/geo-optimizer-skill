@@ -7,7 +7,7 @@ const description =
   'Compare GEO and AI visibility tools by audit depth, monitoring, llms.txt support, schema, workflows, and pricing fit. Includes GEO Optimizer.';
 const canonical = 'https://geoready.dev/best-geo-tools/';
 const datePublished = '2026-06-16';
-const dateModified = '2026-09-16';
+const dateModified = '2026-10-14';
 
 // Aggregati della coorte GeoReady, letti da GET /api/public/benchmark.
 // Sono hardcoded di proposito: la build Docker gira prima che l'app sia in piedi,
@@ -120,7 +120,7 @@ const CATEGORY_MATRIX = [
 const GEO_OPTIMIZER_FEATURES = [
   ['License', 'MIT, open-source. Scoring weights are public and readable in the repository.'],
   ['Distribution', 'Python package on PyPI, plus a command-line tool, a Python library, and an MCP server.'],
-  ['Audit', 'Scores a site 0–100 across 8 categories using 47 research-backed citability methods.'],
+  ['Audit', 'Scores a site 0–100 across nine categories using 47 research-backed citability methods.'],
   ['CI/CD', 'Ships a GitHub Action that runs a full audit in a pipeline and can fail a build below a minimum score.'],
   ['Answer-engine querying', 'The geo citations command asks real answer engines whether your brand is mentioned and your domain is cited (bring your own API key).'],
   ['Hosted citation monitoring', 'The GeoReady hosted layer tracks citations over time: Studio+ runs 5 automated Perplexity checks a day with manual ChatGPT/Google capture on Agency. One-off checks are free; saving history and monitoring are paid.'],
@@ -302,9 +302,11 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
       <p class="mt-3 max-w-3xl leading-relaxed text-ink-soft">
         Every figure above comes from one audit per domain — the most recent, with
         scheduled re-audits excluded so an actively monitored site cannot weight the
-        average. Each site is scored with the same published 100-point, 8-category rubric,
-        so the numbers reflect one consistent definition of readiness rather than a blend
-        of methods. Only aggregates are published: no domain, URL, or identifier leaves
+        average. Each site is scored by the same open-source engine on a published 100-point
+        rubric. Audits run before engine 4.19.0 used the eight-category v1 rubric; the
+        nine-category v2 rubric, which adds Google AI readiness, is the default since then.
+        See the <a href="/methodology/" class="underline underline-offset-2 hover:text-ink">methodology</a>
+        for the version in use. Only aggregates are published: no domain, URL, or identifier leaves
         the sample.
       </p>
       <p class="mt-3 max-w-3xl leading-relaxed text-ink-soft">
@@ -318,8 +320,8 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
 
     <ArticleVisual
       src="/images/article-visuals/N1HeroScoringWeights.png"
-      alt="Diagram of the eight published GEO scoring weights that turn an audit score into a checklist."
-      caption="Transparent scoring turns a GEO audit from a black-box number into a reproducible checklist."
+      alt="Diagram of the legacy v1 GEO scoring weights (eight categories) that turn an audit score into a checklist."
+      caption="Legacy v1 weights shown. The current default, rubric v2, has nine categories; see the methodology page for the current weights."
       height={452}
     />
 
@@ -429,7 +431,7 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
         </table>
       </div>
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
-        Against the criteria: the methodology is transparent because the 8 scoring
+        Against the criteria: the methodology is transparent because the nine scoring
         categories and their weights are published; it is open-source under MIT; it
         does both auditing and citation monitoring — automated Perplexity checks on
         Studio+ and manual ChatGPT/Google capture on Agency — and it runs in CI/CD
@@ -540,7 +542,7 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
       <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">See where your site stands first</h2>
       <p class="mt-3 max-w-3xl leading-relaxed text-ink-soft">
         Before you choose a tool, get a baseline. The free GEO audit scores your
-        site 0 to 100 across 8 categories and returns a prioritized fix list, with
+        site 0 to 100 across nine categories and returns a prioritized fix list, with
         no account required. It is the open-source methodology described above,
         running on your URL.
       </p>
