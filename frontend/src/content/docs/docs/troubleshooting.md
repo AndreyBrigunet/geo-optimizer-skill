@@ -148,7 +148,7 @@ To be safe, place specific bot entries before the catch-all `User-agent: *` bloc
 
 ## 6. `WebSite schema found but score is still low`
 
-**Cause:** WebSite schema is the baseline (worth 2 points in v3.18+). The biggest GEO impact comes from FAQPage schema, which is worth 3 points and directly feeds into AI-generated answers. Brand & Entity Signals (10 pts new in v3.18.2) are also a major opportunity.
+**Cause:** WebSite schema is only the baseline (1 point in the default v2 rubric). FAQPage schema is worth 2 points and gives retrieval systems question-and-answer pairs they can extract directly. The Brand & Entity category (12 points in v2) is also a sizeable opportunity. Current weights are listed in the [Scoring Rubric](/docs/scoring-rubric/).
 
 **Fix:** Add FAQPage schema to pages with Q&A content:
 
@@ -160,7 +160,7 @@ geo schema --type faq --faq-file faqs.json --file page.html --inject
 geo schema --type faq --faq-file faqs.json
 ```
 
-Also ensure your `sameAs` links are in place — they now feed `brand_kg_readiness` (3 pts):
+Also ensure your `sameAs` links are in place — they feed `brand_kg_readiness` (4 pts in v2):
 
 ```json
 {

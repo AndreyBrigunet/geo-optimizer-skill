@@ -67,7 +67,7 @@ export default function EmailGateBanner({ score, categories, claimToken }: Email
         </p>
         <p className="mx-auto max-w-sm text-xs leading-relaxed text-ink-soft">
           Check <strong className="font-semibold text-ink">{email}</strong> for a copy of the complete
-          8-category GEO breakdown with scores, signals, and recommendations.
+          9-category GEO breakdown with scores, signals, and recommendations.
         </p>
       </div>
     );
@@ -87,7 +87,7 @@ export default function EmailGateBanner({ score, categories, claimToken }: Email
 
       <p className="mb-3 text-sm leading-snug text-ink-soft">
         Optional: the full report is already on this page. Enter your email and we'll
-        send you a copy of the complete 8-category breakdown to keep or share.
+        send you a copy of the complete 9-category breakdown to keep or share.
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">

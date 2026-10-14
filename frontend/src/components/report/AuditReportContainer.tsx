@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { trackAuditCompleted, trackCtaClicked } from '../../lib/geo_track';
 import { fetchAuditReport } from '../../lib/api';
 import { mockAuditReport } from '../../lib/mockData';
-import type { AuditReport, CategoryScore, Recommendation } from '../../lib/mockData';
+import type { AuditReport, CategoryScore } from '../../lib/mockData';
 import { saveScore } from '../../lib/scoreHistory';
+import { estimateAfterFreeFixes, type CategoryGain } from '../../lib/reportEstimate';
 import ReportHeader from './ReportHeader';
 import ScoreGauge from './ScoreGauge';
 import ScoreHistory from './ScoreHistory';
@@ -16,48 +17,6 @@ import ExportActions from './ExportActions';
 
 const FREE_SLUGS = new Set(['robots', 'meta', 'signals']);
 const ALL_LOCKED_SLUGS = ['llms', 'schema', 'content', 'ai_discovery', 'brand_entity'];
-
-const categoryAction: Record<string, { label: string; detail: string }> = {
-  robots: {
-    label: 'Fix crawler access first',
-    detail: 'AI systems cannot cite pages they are blocked from reaching. Check robots.txt, X-Robots-Tag, and AI crawler directives before rewriting content.',
-  },
-  llms: {
-    label: 'Publish an llms.txt source map',
-    detail: 'Expose your best pages, product facts, pricing pages, docs, and canonical resources in one file that answer engines can parse quickly.',
-  },
-  schema: {
-    label: 'Add machine-readable schema',
-    detail: 'Ship Organization, WebSite, Article, Product, and FAQ JSON-LD where relevant so engines can resolve what the page, brand, and offer are.',
-  },
-  meta: {
-    label: 'Stabilize page metadata',
-    detail: 'Canonical URLs, titles, descriptions, and Open Graph tags reduce ambiguity when engines choose which URL or snippet to trust.',
-  },
-  content: {
-    label: 'Rewrite for extractable answers',
-    detail: 'Lead important sections with direct answers, add concrete facts, and split long explanations into self-contained blocks that can be cited.',
-  },
-  signals: {
-    label: 'Monitor freshness signals',
-    detail: 'Keep sitemap, feeds, dates, and core technical signals consistent so score regressions are visible before rankings or citations drop.',
-  },
-  ai_discovery: {
-    label: 'Expose AI discovery endpoints',
-    detail: 'Add /.well-known/ai.txt, summary files, and FAQ-style resources so answer engines can discover the site beyond standard HTML crawling.',
-  },
-  brand_entity: {
-    label: 'Strengthen entity resolution',
-    detail: 'Connect the brand, authors, social profiles, contact page, and sameAs references so engines can identify the company consistently.',
-  },
-};
-
-const priorityRank: Record<Recommendation['priority'], number> = {
-  critical: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-};
 
 type RecommendedPlan = {
   id: 'pro' | 'studio';
@@ -165,12 +124,6 @@ function findWeakestCategory(categories: CategoryScore[]): CategoryScore | null 
   return [...visible].sort((a, b) => categoryRatio(a) - categoryRatio(b))[0];
 }
 
-function topRecommendations(recommendations: Recommendation[]): Recommendation[] {
-  return [...recommendations]
-    .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
-    .slice(0, 3);
-}
-
 function recommendedPlanFor(category: CategoryScore | null): RecommendedPlan {
   if (!category) return planByCategory.robots;
   return planByCategory[category.slug] ?? planByCategory.robots;
@@ -205,110 +158,198 @@ function pricingHref(claimToken: string | null): string {
   return `/pricing/?${params.toString()}`;
 }
 
+function claimHref(claimToken: string | null): string {
+  const params = new URLSearchParams({
+    onboarding: claimToken ? 'claim_report' : 'first_domain',
+    utm_source: 'audit_report',
+    utm_medium: 'result_cta',
+    utm_campaign: 'free_claim',
+  });
+  if (claimToken) {
+    params.set('claim', claimToken);
+    params.set('claim_source', 'free_audit_report');
+  }
+  return `https://app.geoready.dev/signup?${params.toString()}`;
+}
+
+/** URL della report page che riesegue l'audit dello stesso indirizzo. */
+function rerunHref(url: string): string {
+  return `/report/audit/?url=${encodeURIComponent(url)}`;
+}
+
+/** "Robots.txt +14, Meta Tags +6 and Signals +3" */
+function formatGains(gains: CategoryGain[]): string {
+  const parts = gains.map((g) => `${g.name} +${g.points}`);
+  if (parts.length <= 1) return parts.join('');
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
+
+/**
+ * Pannello "prossimo passo" del report.
+ *
+ * Ordine voluto (revisione del funnel del 13/10): prima cosa si recupera
+ * gratis e come verificarlo, poi il claim gratuito, e solo dopo l'offerta a
+ * pagamento. La stima è aritmetica sui dati dell'audit (vedi reportEstimate.ts).
+ */
 function ReportNextStep({
   report,
   claimToken,
-  criticalCount,
-  highCount,
   repeatCount,
 }: {
   report: AuditReport;
   claimToken: string | null;
-  criticalCount: number;
-  highCount: number;
   repeatCount: number | null;
 }) {
   const weakest = findWeakestCategory(report.categories);
-  const action = weakest ? categoryAction[weakest.slug] : null;
   const plan = recommendedPlanFor(weakest);
-  const recs = topRecommendations(report.recommendations);
-  const openIssues = criticalCount + highCount;
-  // Recurring-need CTA per i re-auditor (growth: 665 URL ri-auditate a mano).
-  // repeatCount è reale, contato server-side dagli anonymous_reports.
+  const estimate = estimateAfterFreeFixes(report);
+  const lockedNames = report.categories.filter((c) => c.locked && c.score < c.maxScore).map((c) => c.name);
+  const hasGain = estimate.ceiling > estimate.baseline;
+
+  // Recurring-need CTA per i re-auditor: repeatCount è reale, contato
+  // server-side dagli anonymous_reports.
   const isRepeat = repeatCount !== null && repeatCount >= 1;
-  const repeatHeadline = (() => {
-    const host = report.url.replace(/^https?:\/\//, '').split('/')[0];
-    const ordinal = repeatCount === 1 ? 'Second audit' : repeatCount === 2 ? 'Third audit' : `${repeatCount + 1}th audit`;
-    return `${ordinal} of ${host}?`;
-  })();
-  const repeatReason =
-    'You are re-checking this site by hand. The free plan runs the same audit weekly, emails you when the score moves, and keeps the full history, so the checking happens without you.';
+  const host = report.url.replace(/^https?:\/\//, '').split('/')[0];
+  const ordinal = repeatCount === 1 ? 'Second' : repeatCount === 2 ? 'Third' : `${(repeatCount ?? 0) + 1}th`;
 
   return (
     <section className="overflow-hidden rounded-[4px] border border-pass/50 bg-pass-wash/60">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-pass/30 px-5 py-2.5">
         <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">
-          Recommended next step
+          Your baseline
         </span>
         <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-pass-deep">
-          {plan.name} {plan.price}/mo
-          {openIssues > 0 && <> · {openIssues} critical or high issues</>}
+          {estimate.freeFixCount} free {estimate.freeFixCount === 1 ? 'fix' : 'fixes'} on this page
         </span>
       </div>
 
-      <div className="flex flex-col gap-5 p-5 md:p-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="max-w-3xl">
-          <h2 className="font-head text-xl font-extrabold tracking-[-0.02em] leading-tight text-ink md:text-2xl">
-            {isRepeat ? repeatHeadline : plan.headline}
-          </h2>
-
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft md:text-base">
-            {isRepeat ? (
-              repeatReason
-            ) : weakest && action ? (
+      <div className="space-y-6 p-5 md:p-6">
+        {/* Baseline → tetto stimato */}
+        <div>
+          <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-head font-extrabold tracking-[-0.02em] text-ink">
+            <span className="text-3xl tabular-nums md:text-4xl">
+              {estimate.baseline}
+              <span className="text-lg text-ink-mute">/100</span>
+            </span>
+            {hasGain && (
               <>
-                The weakest area is <strong className="font-semibold text-ink">{weakest.name}</strong>
-                {' '}at <strong className="font-semibold text-ink">{weakest.score}/{weakest.maxScore}</strong>.
-                {' '}{action.detail}
-                {' '}{plan.reason}
+                <span className="text-xl text-ink-mute" aria-hidden="true">→</span>
+                <span className="text-3xl tabular-nums text-pass-deep md:text-4xl">
+                  <span className="mr-1 align-middle font-mono text-[11px] font-semibold uppercase tracking-[0.12em]">up to</span>
+                  {estimate.ceiling}
+                  <span className="text-lg text-ink-mute">/100</span>
+                </span>
               </>
-            ) : (
-              plan.reason
             )}
           </p>
-
-          {recs.length > 0 && (
-            <ul className="mt-4 grid gap-2 text-sm text-ink-soft sm:grid-cols-3">
-              {recs.map((rec) => (
-                <li key={rec.id} className="flex gap-2 leading-snug">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-mute" aria-hidden="true" />
-                  <span>{rec.title}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-soft md:text-base">
+            {hasGain ? (
+              <>
+                If every free fix on this page lands: {formatGains(estimate.freeGains)}.
+              </>
+            ) : (
+              <>The categories with free fixes on this page are already at their maximum.</>
+            )}
+            {estimate.lockedGain > 0 && lockedNames.length > 0 && (
+              <>
+                {' '}Another {estimate.lockedGain} points sit in {lockedNames.join(', ')}, whose fix details are part of Pro.
+              </>
+            )}
+          </p>
+          <p className="mt-1 max-w-3xl text-xs leading-relaxed text-ink-mute">
+            How this is computed: your current score plus the points still missing in the categories whose fixes are
+            listed here. It is a ceiling, not a forecast.
+          </p>
         </div>
 
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row lg:flex-col">
+        {/* Loop gratuito: correggi → ri-verifica → segui il punteggio */}
+        <ol className="grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-3">
+          <li className="bg-white p-4">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">1 · Fix</div>
+            <p className="mt-1 text-sm leading-snug text-ink-soft">
+              Apply the fixes listed under Recommendations. They are free and need no account.
+            </p>
+          </li>
+          <li className="bg-white p-4">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">2 · Re-run</div>
+            <p className="mt-1 text-sm leading-snug text-ink-soft">
+              Audit the same URL again, free. Results are cached for about an hour, so re-run after your change is live.
+            </p>
+            <a
+              href={rerunHref(report.url)}
+              onClick={() => trackCtaClicked({ cta_location: 'audit_report_loop', cta_text: 'Re-run audit' })}
+              className="mt-2 inline-flex font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep"
+            >
+              Re-run audit
+            </a>
+          </li>
+          <li className="bg-white p-4">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">3 · Watch it climb</div>
+            <p className="mt-1 text-sm leading-snug text-ink-soft">
+              This browser keeps your score history. Claim the report to keep it in your account, with a weekly re-check.
+            </p>
+          </li>
+        </ol>
+
+        {/* Claim gratuito, separato dall'offerta a pagamento */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold text-ink">
+              {isRepeat ? `${ordinal} audit of ${host}?` : 'Keep this baseline.'}
+            </p>
+            <p className="mt-0.5 text-sm leading-relaxed text-ink-soft">
+              {isRepeat
+                ? 'You are re-checking this site by hand. The free plan runs the same audit weekly for one domain, emails you when the score drifts, and keeps the last 5 audits.'
+                : 'A free account saves this report, re-runs the audit weekly for one domain and keeps the last 5 audits, so you can see whether the fixes moved the score.'}
+            </p>
+          </div>
           <a
-            href={planSignupHref(plan, claimToken)}
-            data-plan-id={plan.id}
-            data-plan-name={plan.name}
-            data-plan-period="monthly"
-            data-plan-price={plan.price}
-            data-plan-currency="USD"
-            data-cta-location="audit_report_next_step"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[4px] bg-pass-deep px-5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-pass"
+            href={claimHref(claimToken)}
+            data-cta-location="audit_report_claim_free"
+            onClick={() =>
+              trackCtaClicked({
+                cta_location: 'audit_report_claim_free',
+                cta_text: claimToken ? 'Claim this report' : 'Track this domain',
+              })
+            }
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[4px] bg-pass-deep px-5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-pass"
           >
-            {plan.cta}
+            {claimToken ? 'Claim this report — free' : 'Track this domain — free'}
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </a>
-          <a
-            href={pricingHref(claimToken)}
-            data-cta="audit_report_next_step_pricing"
-            className="inline-flex min-h-11 items-center justify-center rounded-[4px] border border-rail bg-white px-5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-pass-wash"
-          >
-            Compare plans
-          </a>
-          <p className="max-w-xs text-xs leading-relaxed text-ink-mute">
-            {claimToken
-              ? isRepeat
-                ? 'This report carries over at signup, and weekly monitoring starts on this exact domain.'
-                : 'Signup carries this report into the app so the first paid action is claiming the audited domain.'
-              : 'After signup, the app opens on the first-domain monitoring step.'}
+        </div>
+
+        {/* Offerta a pagamento: dopo il percorso gratuito */}
+        <div className="flex flex-col gap-3 border-t border-pass/30 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-2xl text-sm leading-relaxed text-ink-soft">
+            <span className="font-semibold text-ink">
+              Want it watched for you? {plan.name} {plan.price}/mo.
+            </span>{' '}
+            {plan.headline}
           </p>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <a
+              href={planSignupHref(plan, claimToken)}
+              data-plan-id={plan.id}
+              data-plan-name={plan.name}
+              data-plan-period="monthly"
+              data-plan-price={plan.price}
+              data-plan-currency="USD"
+              data-cta-location="audit_report_next_step"
+              className="inline-flex min-h-11 items-center justify-center rounded-[4px] border border-pass-deep bg-white px-5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-pass-deep transition-colors hover:bg-pass-wash"
+            >
+              {plan.cta}
+            </a>
+            <a
+              href={pricingHref(claimToken)}
+              data-cta="audit_report_next_step_pricing"
+              className="inline-flex min-h-11 items-center justify-center rounded-[4px] border border-rail bg-white px-5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-pass-wash"
+            >
+              Compare plans
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -467,8 +508,6 @@ export default function AuditReportContainer({ reportId }: AuditReportContainerP
       <ReportNextStep
         report={report}
         claimToken={state.claim_token}
-        criticalCount={criticalCount}
-        highCount={highCount}
         repeatCount={state.repeat_count}
       />
 

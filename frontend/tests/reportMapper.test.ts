@@ -28,13 +28,15 @@ const V2_MAX = {
   ai_discovery: 3,
 };
 
-/** Payload gated: forma descritta nell'audit di produzione del 13/10 (punteggio 94, google_ai nascosto). */
+/**
+ * Payload gated come lo restituisce POST /api/public/audits in produzione
+ * (verificato il 14/10): nessun score_max, score_version, version né google_ai.
+ */
 function gatedPayload(): Record<string, any> {
   return {
     url: 'https://example.com',
     score: 94,
     band: 'excellent',
-    version: '4.19.0',
     gated: true,
     locked_categories: ['llms', 'schema', 'content', 'brand_entity'],
     score_breakdown: {
@@ -157,6 +159,13 @@ test('missing detail object outside a gated payload produces no signals', () => 
   const llms = mapBackendToFrontend(payload).categories.find((c) => c.slug === 'llms')!;
 
   assert.deepEqual(llms.signals, []);
+});
+
+test('resolveScoreMax: a gated payload with no version hint uses v2', () => {
+  assert.equal(resolveScoreMax({ gated: true, score_breakdown: { robots: 0 } }).robots, 14);
+  assert.equal(resolveScoreMax({ gated: false, score_breakdown: { robots: 0 } }).robots, 18);
+  // Un'indicazione esplicita resta prioritaria
+  assert.equal(resolveScoreMax({ gated: true, score_version: 1 }).robots, 18);
 });
 
 test('resolveScoreMax: precedence of the version hints', () => {

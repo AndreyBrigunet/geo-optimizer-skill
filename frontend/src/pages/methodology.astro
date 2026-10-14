@@ -2,19 +2,20 @@
 import Shell from '../components/Shell.astro';
 import ArticleVisual from '../components/ArticleVisual.astro';
 
-// Le 8 categorie di scoring con i pesi esatti (totale 100).
-// Allineati a SCORING in src/geo_optimizer/models/config.py.
+// Le 9 categorie della rubrica v2 (default dalla 4.19.0) con i pesi esatti (totale 100).
+// Allineati a CATEGORY_MAX_V2 in src/geo_optimizer/models/config.py.
 // La quarta colonna è la chiave di categoria dello score_breakdown JSON —
 // lo stesso ID che la homepage mostra sul rail dei gate: deve restare quella vera.
 const SCORING_CATEGORIES = [
-  ['robots.txt', 18, 'Whether AI crawlers can reach the site and whether the file welcomes citation-oriented bots instead of blocking them by default. It gates everything downstream — an unreachable page never gets scored on anything else.', 'robots'],
-  ['llms.txt', 18, 'Presence and quality of a root-level llms.txt: a clear H1, a summary, sectioned links, and link depth that point AI systems at the pages worth citing.', 'llms'],
-  ['Schema JSON-LD', 16, 'Valid structured data — Organization, WebSite, Article, FAQ — that lets engines disambiguate the entity and pull facts with confidence rather than inference.', 'schema'],
-  ['Meta tags', 14, 'Title, description, canonical, and Open Graph tags that keep the page identifiable and free of duplication when an engine indexes it.', 'meta'],
-  ['Content', 12, 'Heading hierarchy, front-loaded answers, lists, tables, and the numbers and links that make individual passages quotable.', 'content'],
-  ['Brand & entity', 10, 'Naming coherence, knowledge-graph readiness, and about/contact clarity that tie a set of pages to a single recognizable entity.', 'brand_entity'],
+  ['Google AI readiness', 20, 'The technical conditions Google documents for its search and AI features: an indexable page, snippet controls that do not exclude it, a canonical URL, publication dates, an author byline, crawlable links, a mobile viewport and a sitemap.', 'google_ai'],
+  ['robots.txt', 14, 'Whether AI crawlers can reach the site and whether the file welcomes citation-oriented bots instead of blocking them by default. It gates everything downstream — an unreachable page never gets scored on anything else.', 'robots'],
+  ['Schema JSON-LD', 14, 'Valid structured data — Organization, WebSite, Article, FAQ — that lets engines disambiguate the entity and pull facts with confidence rather than inference.', 'schema'],
+  ['Content', 14, 'Heading hierarchy, front-loaded answers, lists, tables, image alt text, and the numbers and links that make individual passages quotable.', 'content'],
+  ['Brand & entity', 12, 'Naming coherence, knowledge-graph readiness, and about/contact clarity that tie a set of pages to a single recognizable entity.', 'brand_entity'],
+  ['Meta tags', 11, 'Title, description, canonical, and Open Graph tags that keep the page identifiable and free of duplication when an engine indexes it.', 'meta'],
+  ['llms.txt', 6, 'Presence and quality of a root-level llms.txt: a clear H1, a summary, sectioned links, and link depth that point AI systems at the pages worth citing.', 'llms'],
   ['Signals', 6, 'Declared language, RSS, and freshness indicators that help an engine judge how current and maintained the source is.', 'signals'],
-  ['AI discovery', 6, 'Machine-readable endpoints such as /.well-known/ai.txt and JSON summaries that expose the site to AI tooling directly.', 'ai_discovery'],
+  ['AI discovery', 3, 'Machine-readable endpoints such as /.well-known/ai.txt and JSON summaries that expose the site to AI tooling directly.', 'ai_discovery'],
 ] as const;
 
 // Bande di punteggio, identiche a SCORE_BANDS in config.py.
@@ -49,7 +50,7 @@ const faqs = [
   {
     question: 'How are the 100 points distributed?',
     answer:
-      'Across eight categories: robots.txt 18, llms.txt 18, schema 16, meta tags 14, content 12, brand and entity signals 10, freshness signals 6, and AI discovery 6. Crawlability and orientation files carry the most weight because they gate everything else — if a bot cannot fetch the page or find your key URLs, content quality never gets a chance to count.',
+      'Across nine categories in the default rubric (v2): Google AI readiness 20, robots.txt 14, schema 14, content 14, brand and entity signals 12, meta tags 11, llms.txt 6, freshness signals 6, and AI discovery 3. Access and indexability carry the most weight because they gate everything else: if a bot cannot fetch or index the page, content quality never gets a chance to count. The previous eight-category weights remain available as rubric v1 (--score-version 1) for comparisons with older audits.',
   },
   {
     question: 'Does a higher GEO score guarantee more AI citations?',
@@ -71,7 +72,7 @@ const faqs = [
 
 <Shell
   title="GEO Scoring Methodology — Open Scoring Weights"
-  description="GEO Optimizer's open scoring: the 8 categories, exact point weights, score bands, and the citability layer — all MIT-licensed. Reproduce any score free."
+  description="GEO Optimizer's open scoring: the 9 categories, exact point weights, score bands, and the citability layer — all MIT-licensed. Reproduce any score free."
   canonical="https://geoready.dev/methodology/"
 >
   {/* Hero — paper band, annotation on the heading's baseline row */}
@@ -86,16 +87,16 @@ const faqs = [
         </div>
 
         <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink-soft md:text-lg">
-          GEO Optimizer scores a site out of 100 across eight signal categories, then adds a
+          GEO Optimizer scores a site out of 100 across nine signal categories, then adds a
           research-backed citability layer on top. The weights are not a secret: they are plain
           constants in an open-source, MIT-licensed repository, so any score can be read,
           reproduced, and challenged on the record.
         </p>
-        <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">Last updated: June 2026</p>
+        <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">Last updated: October 2026</p>
 
         <div class="mt-8 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-3">
           {[
-            ['100 points', 'Distributed across 8 signal categories.'],
+            ['100 points', 'Distributed across 9 signal categories.'],
             ['Open weights', 'Constants in the MIT-licensed repo.'],
             ['Research-backed', 'Citability grounded in published papers.'],
           ].map(([label, text]) => (
@@ -114,12 +115,6 @@ const faqs = [
         </p>
       </header>
 
-      <ArticleVisual
-        src="/images/article-visuals/N1HeroScoringWeights.png"
-        alt="Diagram of the eight published signal weights that make up the GeoReady score."
-        caption="GeoReady's score is the sum of eight published signal weights, not a black-box number."
-        height={452}
-      />
     </div>
   </section>
 
@@ -128,7 +123,7 @@ const faqs = [
     <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-16">
       <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">How the score is built</h2>
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
-        A GEO audit produces a single number out of 100. That number is the sum of eight
+        A GEO audit produces a single number out of 100. That number is the sum of nine
         category scores, each with a fixed weight. The weights reflect how much a category
         influences whether an AI answer engine can reach a page, understand what it is about,
         and quote it confidently. They are deliberately uneven: the categories that gate access
@@ -144,19 +139,22 @@ const faqs = [
     </div>
   </section>
 
-  {/* The 8 categories and weights */}
+  {/* The 9 categories and weights */}
   <section class="border-t border-rail bg-paper">
     <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-16">
       <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-        <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">The 8 categories and their exact weights</h2>
-        <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · SCORING · Σ = 100 pts</p>
+        <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">The 9 categories and their exact weights</h2>
+        <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · CATEGORY_MAX_V2 · Σ = 100 pts</p>
       </div>
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
-        Every site is scored on the same eight categories, weighted to a total of 100 points.
-        robots.txt and llms.txt carry the most weight because they gate everything downstream:
-        if a crawler is blocked or cannot find your key URLs, the quality of the content never
-        gets a chance to matter. Schema and meta tags come next, because they decide whether an
-        engine can resolve the entity and pull facts without guessing.
+        Every site is scored on the same nine categories, weighted to a total of 100 points.
+        Google AI readiness carries the most weight, followed by robots.txt, schema and content:
+        if a page cannot be crawled or indexed, the quality of the content never gets a chance
+        to matter, and once it can, structured data and quotable passages decide whether an
+        engine can resolve the entity and pull facts without guessing. These are the weights of
+        rubric v2, the default since v4.19.0; the
+        <a href="/docs/scoring-rubric/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">scoring rubric</a>
+        lists every check, and the v1 weights stay available with <code class="font-mono text-[13px]">--score-version 1</code>.
       </p>
       <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
         <table class="w-full min-w-[640px] text-left text-sm">
@@ -181,13 +179,13 @@ const faqs = [
             <tr class="border-t-2 border-rail">
               <th scope="row" class="whitespace-nowrap px-4 py-3 font-semibold text-ink">Total</th>
               <td class="px-4 py-3 font-mono font-semibold tabular-nums text-ink">100</td>
-              <td class="px-4 py-3 leading-relaxed text-ink-mute">The sum of all eight category weights.</td>
+              <td class="px-4 py-3 leading-relaxed text-ink-mute">The sum of all nine category weights.</td>
             </tr>
           </tbody>
         </table>
       </div>
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
-        The same weights apply to every site, so two audits are always directly comparable. A
+        The same weights apply to every site, so two audits on the same rubric version are directly comparable. A
         site can score well on content yet lose most of its points to a single blocked crawler —
         which is exactly the kind of imbalance the category breakdown is meant to expose.
       </p>
