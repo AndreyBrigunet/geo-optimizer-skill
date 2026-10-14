@@ -65,10 +65,13 @@ function isVersionAtLeast(version: unknown, min: [number, number, number]): bool
  * Massimi delle categorie per questa risposta.
  *
  * Ordine: score_max del backend, poi score_version, poi gli indizi di una
- * risposta v2 a cui il backend ha tolto i campi di versione (per esempio il
- * payload gated del SaaS): la categoria google_ai nel breakdown o una versione
- * dell'engine >= 4.19.0. Solo in assenza di tutto si usano i massimi v1.
- * Applicare i massimi v1 a punteggi v2 produceva valori come "Content 14/12".
+ * risposta v2 a cui il backend ha tolto i campi di versione: la categoria
+ * google_ai nel breakdown o una versione dell'engine >= 4.19.0. Un payload
+ * gated arriva solo dal SaaS, che dalla 4.19.2 (pin >=4.19.2) usa la rubrica v2
+ * di default, e in produzione non porta né score_max né versione né google_ai:
+ * senza questa regola ricadeva sui massimi v1 ("Robots 0/18" invece di 0/14).
+ * Solo in assenza di tutto si usano i massimi v1. Applicare i massimi v1 a
+ * punteggi v2 produceva valori come "Content 14/12".
  */
 export function resolveScoreMax(data: any): Record<string, number> {
   if (data.score_max && typeof data.score_max === 'object') return data.score_max;
@@ -76,6 +79,7 @@ export function resolveScoreMax(data: any): Record<string, number> {
   if (typeof data.score_version === 'number' && data.score_version >= 2) return MAX_SCORES_V2;
   if ('google_ai' in (data.score_breakdown || {})) return MAX_SCORES_V2;
   if (isVersionAtLeast(data.version, FIRST_V2_ENGINE)) return MAX_SCORES_V2;
+  if (data.gated === true) return MAX_SCORES_V2;
   return MAX_SCORES_V1;
 }
 
