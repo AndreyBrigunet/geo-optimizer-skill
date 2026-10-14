@@ -77,11 +77,9 @@ That's it. The script fetches your homepage, `robots.txt`, and checks for `/llms
 
 ## 4. Reading the Output
 
-The audit output is divided into **8 scored categories** plus bonus checks and a final score.
+The audit output is divided into **9 scored categories** plus bonus checks and a final score out of 100. The per-category maximum is printed next to each score (`5 / 14`). The weights belong to the scoring rubric, which is the single source of truth: see [Scoring Rubric](/docs/scoring-rubric/). Rubric v2 is the default; `--score-version 1` selects the legacy v1 weights.
 
-The v2 categories are: **Google AI readiness** (20pt), **Robots.txt** (14pt), **Schema JSON-LD** (14pt), **Content** (14pt), **Brand & Entity** (12pt), **Meta Tags** (11pt), **llms.txt** (6pt), **Signals** (6pt), **AI Discovery** (3pt).
-
-Each section shows what passed and what's missing:
+Each section shows what passed and what's missing. This is an illustrative run, not output from a specific site:
 
 ```
 ▸ GOOGLE AI READINESS ────────────────── 0 / 20
@@ -119,7 +117,7 @@ Each section shows what passed and what's missing:
   ❌ No AI discovery endpoints
 
 ──────────────────────────────────────────────────────────
-  GEO SCORE   [████████░░░░░░░░░░░░]   34 / 100   ❌ CRITICAL
+  GEO SCORE   [██████░░░░░░░░░░░░░░]   31 / 100   ❌ CRITICAL
 ──────────────────────────────────────────────────────────
 ```
 
