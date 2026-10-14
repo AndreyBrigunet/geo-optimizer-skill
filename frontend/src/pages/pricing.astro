@@ -221,6 +221,36 @@ const comparisonRows: [string, string, string, string, string][] = [
   ['CLI (MIT)',               '✓',       '✓',        '✓',        '✓'],
 ];
 
+// CLI vs Pro. Every row below was checked against the CLI source and docs:
+// src/geo_optimizer/cli/{track,monitor,history,audit}_cmd.py, core/history.py,
+// core/monitor.py, models/config.py. The Pro column only restates what the plan
+// cards and the feature comparison above already claim.
+const cliVsProRows = [
+  [
+    'Where the audit runs',
+    'On the machine or CI runner where you start it.',
+    'On GeoReady servers.',
+  ],
+  [
+    'Schedule',
+    'None built in. geo track and geo monitor run once, when you call them. Recurring runs need your own cron or scheduled CI job.',
+    'Weekly for one domain, without a scheduler on your side.',
+  ],
+  [
+    'Where history lives',
+    'A local SQLite file, ~/.geo-optimizer/tracking.db, on the machine that ran the audit. By default the trend shows the last 12 snapshots and keeps 90 days; both are adjustable. A CI runner that starts clean needs that file cached or persisted.',
+    'Kept in your account: 30-audit score history.',
+  ],
+  [
+    'When the score drops',
+    'geo audit --regression exits with code 1 and prints a message when the score is lower than the previous saved snapshot. Anything beyond that, such as who gets told, is up to your CI.',
+    'An alert when your score moves by 5 points or more.',
+  ],
+] as const;
+
+const cliVsProAnswer =
+  'If you already run the CLI in CI, you may not need Pro. geo track and geo monitor use the same open-source audit engine, store snapshots in a local SQLite file (~/.geo-optimizer/tracking.db), and run only when you start them, so the schedule, the storage and reading the output are yours to set up. Pro is for people who would rather not operate that: the audit runs weekly for one domain, history is kept in your account, and a score move of 5 points or more triggers an alert.';
+
 const faqs = [
   {
     q: 'Is the free audit really free?',
@@ -233,6 +263,10 @@ const faqs = [
   {
     q: 'What does Pro add that Free does not?',
     a: 'Pro adds continuity rather than a bigger report. The free audit is a one-shot snapshot with all 8 categories. Pro monitors your domain weekly, tracks score history over time, and sends alerts when your GEO score drops. It also includes PDF export and API access.',
+  },
+  {
+    q: 'The CLI already has geo track and geo monitor. Why pay for Pro?',
+    a: cliVsProAnswer,
   },
   {
     q: 'Are paid plans available right now?',
@@ -849,6 +883,50 @@ const heroCadenceRows = [
     </div>
   </section>
 
+  {/* CLI (free) vs Pro — answers the "why pay if the CLI is free" question with verified rows only */}
+  <section class="border-t border-rail bg-white" aria-labelledby="cli-vs-pro-heading">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-16">
+      <h2 id="cli-vs-pro-heading" class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">
+        The CLI already has geo track and geo monitor. Why pay for Pro?
+      </h2>
+      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-ink-soft">
+        You may not need to. <a href="/docs/geo-track/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">geo track</a> and
+        <a href="/docs/geo-monitor/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">geo monitor</a> use the
+        same open-source audit engine, and they are enough if you are willing to run them yourself: your own cron or CI job, your own storage, and you read the output.
+        Neither command stays running or sends anything on its own.
+      </p>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="min-w-full border-collapse overflow-hidden rounded-[4px] border border-rail bg-white text-left text-sm">
+          <thead class="bg-paper">
+            <tr>
+              <th scope="col" class="border-b border-rail px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute"></th>
+              <th scope="col" class="border-b border-rail px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">CLI (free, MIT)</th>
+              <th scope="col" class="border-b border-rail bg-pass-wash/60 px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cliVsProRows.map(([label, cli, pro]) => (
+              <tr>
+                <th scope="row" class="border-b border-rail px-4 py-3 align-top text-sm font-semibold text-ink">{label}</th>
+                <td class="border-b border-rail px-4 py-3 align-top text-ink-soft">{cli}</td>
+                <td class="border-b border-rail bg-pass-wash/40 px-4 py-3 align-top text-ink-soft">{pro}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p class="mt-6 max-w-3xl text-sm leading-relaxed text-ink-soft">
+        Pro is for people who would rather not operate that setup. If you already run the CLI in CI and the exit code is enough for you, you may not need Pro.
+        Pro adds the scheduling, the stored history and the alerts around the audit. It is not a different audit.
+      </p>
+      <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">
+        source: geo-optimizer-skill CLI docs and code · Pro column as listed in the plans above
+      </p>
+    </div>
+  </section>
+
   {/* FAQ */}
   <section class="border-t border-rail bg-white" aria-labelledby="faq-heading">
     <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-16">
@@ -1030,6 +1108,11 @@ const heroCadenceRows = [
             "@type": "Question",
             "name": "What does Pro add that Free does not?",
             "acceptedAnswer": { "@type": "Answer", "text": "Pro adds continuity rather than a bigger report. The free audit is a one-shot snapshot with all 8 categories. Pro monitors your domain weekly, tracks score history over time, and sends alerts when your GEO score drops. It also includes PDF export and API access." }
+          },
+          {
+            "@type": "Question",
+            "name": "The CLI already has geo track and geo monitor. Why pay for Pro?",
+            "acceptedAnswer": { "@type": "Answer", "text": cliVsProAnswer }
           },
           {
             "@type": "Question",
