@@ -60,15 +60,15 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: 'Come iniziare',
+          label: 'Getting started',
           items: [
-            { label: 'Introduzione', link: '/docs/getting-started/' },
-            { label: 'Risoluzione problemi', link: '/docs/troubleshooting/' },
+            { label: 'Introduction', link: '/docs/getting-started/' },
+            { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
             { label: 'CI/CD', link: '/docs/ci-cd/' },
           ],
         },
         {
-          label: 'Comandi CLI',
+          label: 'CLI commands',
           items: [
             { label: 'geo audit', link: '/docs/geo-audit/' },
             { label: 'geo fix', link: '/docs/geo-fix/' },
@@ -88,7 +88,7 @@ export default defineConfig({
           items: [{ label: 'Scoring rubric', link: '/docs/scoring-rubric/' }],
         },
         {
-          label: 'Contenuti & File',
+          label: 'Content & files',
           items: [
             { label: 'llms.txt', link: '/docs/llms-txt/' },
             { label: 'AI bots reference', link: '/docs/ai-bots-reference/' },
@@ -96,9 +96,9 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Infrastruttura',
+          label: 'Infrastructure',
           items: [
-            { label: 'Contratto JSON', link: '/docs/json-contract/' },
+            { label: 'JSON contract', link: '/docs/json-contract/' },
             { label: 'LLM providers', link: '/docs/llm-providers/' },
           ],
         },
