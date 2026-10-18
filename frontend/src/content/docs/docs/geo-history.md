@@ -4,8 +4,6 @@ description: "View the saved GEO score trend for any URL from your local trackin
 order: 11
 ---
 
-# GEO History
-
 `geo history` shows the saved GEO score trend for a URL from the local tracking database.
 
 ---
@@ -66,6 +64,6 @@ Best: 81/100 | Worst: 63/100
 
 ## Related Commands
 
-- [`geo audit`](geo-audit.md): save snapshots with `--save-history` or gate CI with `--regression`
-- [`geo track`](geo-track.md): run a new audit, persist it, and optionally generate an HTML report
-- [`CI/CD Integration`](ci-cd.md): use regression detection in pipelines
+- [`geo audit`](/docs/geo-audit/): save snapshots with `--save-history` or gate CI with `--regression`
+- [`geo track`](/docs/geo-track/): run a new audit, persist it, and optionally generate an HTML report
+- [`CI/CD Integration`](/docs/ci-cd/): use regression detection in pipelines

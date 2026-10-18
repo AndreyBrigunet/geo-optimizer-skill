@@ -419,6 +419,7 @@ class TestAuditCommand:
         assert "content" in data["checks"]
         assert "recommendations" in data
 
+    @patch.dict("sys.modules", {"httpx": None})
     @patch("geo_optimizer.cli.audit_cmd.run_full_audit")
     def test_audit_json_check_scores(self, mock_audit, runner, sample_audit_result):
         """JSON output includes per-check scores and max values."""
@@ -431,6 +432,7 @@ class TestAuditCommand:
             assert "passed" in check_data, f"Missing 'passed' in {check_name}"
             assert "details" in check_data, f"Missing 'details' in {check_name}"
 
+    @patch.dict("sys.modules", {"httpx": None})
     @patch("geo_optimizer.cli.audit_cmd.run_full_audit")
     def test_audit_file_output(self, mock_audit, runner, sample_audit_result):
         """geo audit --output FILE writes the report to a file."""
@@ -532,6 +534,34 @@ class TestAuditCommand:
         assert call_args[0][0] == "https://example.com/sitemap.xml"
         assert call_args[1]["max_urls"] == 50
         assert call_args[1]["concurrency"] == 5
+
+    @patch("geo_optimizer.cli.audit_cmd.validate_public_url", return_value=(True, None))
+    @patch("geo_optimizer.cli.audit_cmd.discover_sitemap", return_value="https://example.com/sitemap.xml")
+    @patch("geo_optimizer.cli.audit_cmd.run_batch_audit")
+    def test_audit_max_pages_uses_discovered_sitemap(
+        self, mock_batch_audit, mock_discover, _mock_validate, runner, sample_batch_audit_result
+    ):
+        """geo audit --url X --max-pages 5 audits 5 pages of the discovered sitemap (batch path)."""
+        mock_batch_audit.return_value = sample_batch_audit_result
+        result = runner.invoke(cli, ["audit", "--url", "https://example.com", "--max-pages", "5"])
+        assert result.exit_code == 0
+        assert "GEO BATCH AUDIT" in result.output
+        mock_discover.assert_called_once()
+        assert mock_batch_audit.call_args[0][0] == "https://example.com/sitemap.xml"
+        assert mock_batch_audit.call_args[1]["max_urls"] == 5
+
+    @patch("geo_optimizer.cli.audit_cmd.discover_sitemap", return_value=None)
+    def test_audit_max_pages_without_sitemap_fails_clearly(self, _mock_discover, runner):
+        """No sitemap found: exit 1 with a message, no silent fallback to one page."""
+        result = runner.invoke(cli, ["audit", "--url", "https://example.com", "--max-pages", "5"])
+        assert result.exit_code == 1
+        assert "No sitemap found" in result.output
+
+    def test_audit_max_pages_requires_url(self, runner):
+        """--max-pages without --url is a usage error."""
+        result = runner.invoke(cli, ["audit", "--sitemap", "https://example.com/sitemap.xml", "--max-pages", "5"])
+        assert result.exit_code != 0
+        assert "needs '--url'" in result.output
 
     @patch("geo_optimizer.cli.audit_cmd.validate_public_url", return_value=(True, None))
     @patch("geo_optimizer.cli.audit_cmd.run_batch_audit")
@@ -1870,3 +1900,18 @@ class TestFormatters:
         output = format_audit_text(result)
         assert "geoready.dev" in output
         assert "One-shot audit" in output
+
+    def test_format_audit_text_includes_per_run_web_report_link(self):
+        """Text report prints the per-run web-report URL for the audited site.
+
+        The link is printed text (no phone-home, no auto-open): it pre-fills
+        the free web audit with the same URL the user just audited.
+        """
+        from geo_optimizer.cli.formatters import format_audit_text
+
+        result = AuditResult(url="https://example.com", score=50, band="foundation")
+        output = format_audit_text(result)
+        assert "Web report for this URL" in output
+        # L'URL del sito resta leggibile (due punti e slash non encodati):
+        # https://geoready.dev/report/audit?url=https://example.com
+        assert "https://geoready.dev/report/audit?url=https://example.com" in output

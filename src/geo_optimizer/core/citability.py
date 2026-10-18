@@ -21,12 +21,15 @@ from geo_optimizer.models.config import (
     FRESHNESS_FRESH_DAYS,
     FRESHNESS_VERY_FRESH_DAYS,
     FRONT_LOADING_DENSITY_THRESHOLD,
+    KEYWORD_STUFFING_MIN_COUNT,
     KEYWORD_STUFFING_THRESHOLD,
     TTR_THRESHOLD,
     TTR_WINDOW_SIZE,
 )
 from geo_optimizer.models.results import CitabilityResult, MethodScore
-from geo_optimizer.utils.jsonld import iter_jsonld_objects
+from geo_optimizer.utils.jsonld import first_object, iter_jsonld_objects, string_list
+from geo_optimizer.utils.jsonld import schema_types as jsonld_types
+from geo_optimizer.utils.stopwords import ALL_STOP_WORDS, brand_words, page_language, stop_words_for
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -104,59 +107,6 @@ _TECH_PATTERNS = [
     r"`[^`]+`",
 ]
 _TECH_RE = re.compile("|".join(_TECH_PATTERNS))
-
-# Stop words for TTR (basic English)
-_STOP_WORDS = {
-    "the",
-    "a",
-    "an",
-    "and",
-    "or",
-    "but",
-    "in",
-    "on",
-    "at",
-    "to",
-    "for",
-    "of",
-    "with",
-    "by",
-    "from",
-    "is",
-    "are",
-    "was",
-    "were",
-    "be",
-    "been",
-    "have",
-    "has",
-    "had",
-    "do",
-    "does",
-    "did",
-    "will",
-    "would",
-    "could",
-    "should",
-    "may",
-    "might",
-    "shall",
-    "this",
-    "that",
-    "these",
-    "those",
-    "it",
-    "its",
-    "not",
-    "no",
-    "can",
-    "so",
-    "if",
-    "then",
-    "than",
-    "also",
-}
-
 
 # ─── Helper function ─────────────────────────────────────────────────────────
 
@@ -539,7 +489,8 @@ def detect_easy_to_understand(soup) -> MethodScore:
 def detect_unique_words(soup, clean_text: str | None = None) -> MethodScore:
     """Calculate Type-Token Ratio to estimate vocabulary richness."""
     body_text = (clean_text or _get_clean_text(soup)).lower()
-    words = [w for w in re.findall(r"\b[a-zA-Zà-ú]{4,}\b", body_text) if w not in _STOP_WORDS]
+    stop_words = stop_words_for(page_language(soup)) or ALL_STOP_WORDS
+    words = [w for w in re.findall(r"\b[^\W\d_]{4,}\b", body_text) if w not in stop_words]
 
     if len(words) < 50:
         return MethodScore(name="unique_words", label="Unique Words", max_score=3, impact="+7%")
@@ -577,9 +528,11 @@ def detect_unique_words(soup, clean_text: str | None = None) -> MethodScore:
 def detect_keyword_stuffing(soup, clean_text: str | None = None) -> MethodScore:
     """Detect keyword stuffing that penalizes AI visibility."""
     body_text = (clean_text or _get_clean_text(soup)).lower()
-    words = re.findall(r"\b[a-zA-Zà-ú]{3,}\b", body_text)
+    words = re.findall(r"\b[^\W\d_]{3,}\b", body_text)
+    # Own brand and function words are not keywords (#607); an unlisted declared language skips the check
+    stop_words = stop_words_for(page_language(soup))
 
-    if len(words) < 50:
+    if stop_words is None or len(words) < 50:
         # Text too short for meaningful analysis
         return MethodScore(
             name="keyword_stuffing", label="No Keyword Stuffing", score=6, max_score=6, impact="-9%", detected=False
@@ -590,7 +543,12 @@ def detect_keyword_stuffing(soup, clean_text: str | None = None) -> MethodScore:
     threshold = KEYWORD_STUFFING_THRESHOLD
 
     # Words with abnormal frequency (above threshold)
-    suspicious = {w: c for w, c in word_freq.most_common(20) if c / total > threshold and w not in _STOP_WORDS}
+    stop_words = stop_words | brand_words(soup)
+    suspicious = {
+        w: c
+        for w, c in word_freq.most_common(20)
+        if c / total > threshold and c >= KEYWORD_STUFFING_MIN_COUNT and w not in stop_words
+    }
 
     stuffing_count = len(suspicious)
 
@@ -609,7 +567,7 @@ def detect_keyword_stuffing(soup, clean_text: str | None = None) -> MethodScore:
         front_suspicious = {
             w: c
             for w, c in front_freq.most_common(10)
-            if c / front_total > FRONT_LOADING_DENSITY_THRESHOLD and w not in _STOP_WORDS
+            if c / front_total > FRONT_LOADING_DENSITY_THRESHOLD and w not in stop_words
         }
         if len(front_suspicious) >= 2:
             front_loading_warning = True
@@ -650,7 +608,7 @@ def detect_keyword_stuffing(soup, clean_text: str | None = None) -> MethodScore:
     )
 
 
-# ─── 10. Answer-First Structure (+25%) — AutoGEO ICLR 2026 ───────────────────
+# ─── 10. Answer-First Structure (+25%) — AutoGEO (arXiv:2510.11438, preprint) ───────────────────
 
 
 # Pattern for concrete facts: numbers, percentages, assertive statements
@@ -667,7 +625,7 @@ _FACT_RE = re.compile(
 def detect_answer_first(soup) -> MethodScore:
     """Detect answer-first structure: H2 followed by paragraph with concrete fact.
 
-    AutoGEO (ICLR 2026) identifies AnswerFirst as one of the most effective
+    AutoGEO (arXiv:2510.11438, preprint) identifies AnswerFirst as one of the most effective
     strategies for AI citation. For each H2, checks if the first paragraph
     contains a concrete fact (number, assertive statement) in the first 150 chars.
     """
@@ -984,7 +942,7 @@ def detect_image_alt_quality(soup) -> MethodScore:
 def _compute_freshness_level(days_old: float) -> str:
     """Map content age in days to a freshness level string (#401).
 
-    Levels (AutoGEO ICLR 2026):
+    Levels (AutoGEO, arXiv:2510.11438 preprint):
     - very_fresh: < 3 months (FRESHNESS_VERY_FRESH_DAYS)
     - fresh:      3-6 months (FRESHNESS_FRESH_DAYS)
     - aging:      6-12 months (FRESHNESS_AGING_DAYS)
@@ -1485,9 +1443,7 @@ def detect_comparison_content(soup, clean_text: str | None = None) -> MethodScor
 def _extract_article_author(soup) -> dict | None:
     """Return the `author` value of the first Article-type JSON-LD schema found, if any."""
     for item in iter_jsonld_objects(soup):
-        item_type = item.get("@type")
-        types = item_type if isinstance(item_type, list) else [item_type]
-        if any(t in ARTICLE_TYPES for t in types):
+        if any(t in ARTICLE_TYPES for t in jsonld_types(item.get("@type"))):
             author = item.get("author")
             if isinstance(author, list):
                 author = author[0] if author else None
@@ -2052,22 +2008,20 @@ def detect_shopping_readiness(soup) -> MethodScore:
 
     score = 0
     # Verify price + availability in the offer
-    offers = product_schema.get("offers") or product_schema.get("offer", {})
-    if isinstance(offers, list):
-        offers = offers[0] if offers else {}
+    offers = first_object(product_schema.get("offers") or product_schema.get("offer"))
     has_price = bool(offers.get("price") or offers.get("lowPrice"))
     has_availability = bool(offers.get("availability"))
 
     if has_price and has_availability:
         score += 1
 
-    # AggregateRating
-    has_rating = bool(product_schema.get("aggregateRating"))
+    # AggregateRating (solo se e' un oggetto: una stringa come "4.5" non e' un rating strutturato)
+    rating_data = first_object(product_schema.get("aggregateRating"))
+    has_rating = bool(rating_data)
     if has_rating:
         score += 1
 
     # Review count
-    rating_data = product_schema.get("aggregateRating", {})
     has_review_count = bool(rating_data.get("reviewCount") or rating_data.get("ratingCount"))
     if has_review_count:
         score += 1
@@ -2124,9 +2078,7 @@ def detect_chatgpt_shopping(soup) -> MethodScore:
     has_image = bool(product_schema.get("image"))
     has_brand = bool(product_schema.get("brand"))
 
-    offers = product_schema.get("offers") or product_schema.get("offer", {})
-    if isinstance(offers, list):
-        offers = offers[0] if offers else {}
+    offers = first_object(product_schema.get("offers") or product_schema.get("offer"))
     has_price = bool(offers.get("price") or offers.get("lowPrice"))
     has_availability = bool(offers.get("availability"))
 
@@ -2257,12 +2209,7 @@ def detect_multi_platform(soup) -> MethodScore:
 
     # Extract sameAs from all JSON-LD schemas
     for item in _iter_jsonld_objects(soup):
-        same_as = item.get("sameAs", [])
-        if isinstance(same_as, str):
-            same_as = [same_as]
-        for url in same_as:
-            if not isinstance(url, str):
-                continue
+        for url in string_list(item.get("sameAs")):
             parsed = urlparse(url)
             domain = parsed.netloc.lower().removeprefix("www.")
             for plat_domain, plat_name in _PLATFORM_DOMAINS.items():
@@ -3331,10 +3278,7 @@ def detect_entity_resolution(soup) -> MethodScore:
         desc = item.get("description")
         if entity_type and name:
             has_schema_entity = True
-            if isinstance(entity_type, list):
-                entity_types_found.extend(entity_type)
-            else:
-                entity_types_found.append(str(entity_type))
+            entity_types_found.extend(jsonld_types(entity_type))
             if desc:
                 score += 1  # well-described entity
         # sameAs check (same item may have both @type and sameAs)

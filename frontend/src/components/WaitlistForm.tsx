@@ -27,7 +27,7 @@ const SITES_RANGE_OPTIONS = [
 
 const MAIN_INTEREST_OPTIONS = [
   { value: "ai-search-monitoring", label: "AI search monitoring (weekly alerts)" },
-  { value: "full-geo-reports", label: "Full 8-category GEO reports" },
+  { value: "full-geo-reports", label: "Full nine-category GEO reports" },
   { value: "audit-history", label: "Audit history and score trends" },
   { value: "pdf-reports", label: "PDF report export" },
   { value: "agency-reporting", label: "Agency / white-label reporting" },

@@ -73,6 +73,11 @@ MAX_TOTAL_URLS: int = 10_000
 # Performance budget: warn if a single-page audit exceeds this threshold (#290)
 AUDIT_TIMEOUT_SECONDS: int = 10
 
+# Hard per-URL deadline in sitemap/batch mode (#556). Distinct from the budget above:
+# that one only logs a warning, this one kills an audit that is genuinely hung.
+# A healthy page can take 15-20s (8 fetches + CDN bot probes), so 10s failed every URL.
+BATCH_URL_TIMEOUT_SECONDS: int = 60
+
 # Fasi reali di run_full_audit / run_full_audit_async, notificate via on_step (progresso CLI)
 AUDIT_STEPS: tuple[str, ...] = (
     "Fetching page, robots.txt, llms.txt and AI files",
@@ -685,6 +690,16 @@ CATEGORY_MAX_V2 = {
     "signals": 6,
     "ai_discovery": 3,
 }
+# Non-scored keys of ``AuditResult.recommendations_by_category`` (besides the scored categories).
+# "blockers": issues that stop AI crawlers from reading or trusting the page and that are not
+# part of a scored category: the CDN/WAF block, content that needs JavaScript to render, the
+# critical prompt-injection patterns and the critical UGC injection risk.
+RECOMMENDATION_BLOCKERS_CATEGORY = "blockers"
+# "other": everything else without a scored category: the non-critical UGC advisory, negative
+# signals, WebMCP, multimodal, and the error-path messages of an audit that could not analyse
+# the page.
+RECOMMENDATION_OTHER_CATEGORY = "other"
+
 SCORING_BY_VERSION = {1: SCORING, 2: SCORING_V2}
 CATEGORY_MAX_BY_VERSION = {1: CATEGORY_MAX, 2: CATEGORY_MAX_V2}
 ROBOTS_PARTIAL_BY_VERSION = {1: ROBOTS_PARTIAL_SCORE, 2: ROBOTS_PARTIAL_SCORE_V2}
@@ -751,7 +766,7 @@ JS_EMPTY_ROOT_WORDS: int = 200  # empty root + low word count → JS-dependent
 JS_CRITICAL_WORDS: int = 50  # critically low content threshold
 
 # Content freshness thresholds in days (#401)
-# AutoGEO ICLR 2026: tech content < 3 months strongly preferred by AI search engines
+# AutoGEO (arXiv:2510.11438, preprint): tech content < 3 months strongly preferred by AI search engines
 FRESHNESS_VERY_FRESH_DAYS = 90  # < 3 months → very_fresh
 FRESHNESS_FRESH_DAYS = 180  # 3-6 months → fresh
 FRESHNESS_AGING_DAYS = 365  # 6-12 months → aging (> 12 months = stale)
@@ -841,6 +856,7 @@ UGC_ID_CLASS_RE = r"(?:^|[-_ ])(?:comment-?list|comments?-?(?:section|area|wrapp
 # Keyword stuffing threshold: single-word density above which it is considered spam
 # SEMrush 2025 research: > 2.5% is a manipulation signal for AI engines
 KEYWORD_STUFFING_THRESHOLD = 0.025
+KEYWORD_STUFFING_MIN_COUNT = 5  # a word used fewer times is never stuffing, whatever the density
 
 # URL patterns for "about" pages (fix #391)
 ABOUT_LINK_PATTERNS = [

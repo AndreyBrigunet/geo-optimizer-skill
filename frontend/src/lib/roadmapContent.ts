@@ -19,25 +19,25 @@ export const roadmapPhases: RoadmapPhase[] = [
   {
     id: 'current',
     label: 'Current Foundation',
-    subtitle: 'What exists today in v4.18.x',
+    subtitle: 'What exists today in v4.19.x',
     statusColor: 'border-accent-success',
     items: [
       {
         id: 'cli-audit',
         title: 'CLI audit',
-        description: 'Complete `geo audit` command with 8-category scoring and 4 output formats.',
+        description: 'Complete `geo audit` command with 9-category scoring and multiple output formats.',
         status: 'available',
       },
       {
         id: 'scoring-8cat',
-        title: '8-category scoring',
-        description: 'Robots.txt, llms.txt, Schema, Meta, Content, Signals, AI Discovery, Brand & Entity.',
+        title: '9-category scoring (rubric v2)',
+        description: 'Robots.txt, llms.txt, Schema, Meta, Content, Signals, AI Discovery, Brand & Entity, and Google AI readiness. Rubric v2 is the default since v4.19.0.',
         status: 'available',
       },
       {
         id: 'citability-score',
         title: 'Citability score',
-        description: '47-method citability analysis derived from Princeton KDD 2024 and AutoGEO ICLR 2026.',
+        description: '47-method citability analysis derived from Princeton KDD 2024 and AutoGEO (arXiv:2510.11438, preprint).',
         status: 'available',
       },
       {
@@ -97,7 +97,7 @@ export const roadmapPhases: RoadmapPhase[] = [
       {
         id: 'output-formats',
         title: 'Output formats',
-        description: 'JSON, HTML, SARIF, JUnit XML, and GitHub Annotations for CI integration.',
+        description: 'JSON, HTML, SARIF, JUnit XML, and GitHub Annotations for CI integration. JSON output also groups recommendations by scored category (plus blockers and other) since v4.19.2.',
         status: 'available',
       },
       {
@@ -118,6 +118,12 @@ export const roadmapPhases: RoadmapPhase[] = [
         description: '`geo citations` asks real answer engines (Perplexity, OpenAI, Anthropic, Gemini, DeepSeek, MiniMax) customer-style questions and reports brand mentions / domain citations, with `--runs N` sampling for a 95% confidence interval, plus an optional Google SERP + AI Overview source via serpbase.dev.',
         status: 'available',
       },
+      {
+        id: 'wordpress-plugin',
+        title: 'GeoReady WordPress plugin',
+        description: 'Open-source plugin that generates llms.txt, /.well-known/ai.txt, and /ai/summary.json from published content (sitemap detection for WordPress core, Yoast SEO, Rank Math, SEOPress, and All in One SEO) and runs a one-click AI readiness audit of the home page. Available on GitHub (Auriti-Labs/wordpress-geoready); not yet listed on WordPress.org.',
+        status: 'available',
+      },
     ],
   },
   {
@@ -129,7 +135,7 @@ export const roadmapPhases: RoadmapPhase[] = [
       {
         id: 'static-pages',
         title: 'Strategic static pages',
-        description: 'Research, Roadmap, Manifesto, guides, and comparison pages — live.',
+        description: 'Research, Roadmap, Manifesto, guides, and comparison pages, all live.',
         status: 'available',
       },
       {
@@ -174,6 +180,12 @@ export const roadmapPhases: RoadmapPhase[] = [
         description: 'WCAG 2.1 AA pass, keyboard navigation, screen-reader optimization.',
         status: 'in-progress',
       },
+      {
+        id: 'wordpress-platform-audit',
+        title: 'WordPress plugin: audit on the GeoReady platform',
+        description: 'The plugin audit is moving to the GeoReady platform. A setting, off by default, lets site owners opt in to contributing pseudonymised results (salted domain hash and scores) to the benchmark dataset. WordPress results are used internally for now.',
+        status: 'in-progress',
+      },
     ],
   },
   {
@@ -213,10 +225,10 @@ export const roadmapPhases: RoadmapPhase[] = [
         status: 'planned',
       },
       {
-        id: 'wordpress-plugin',
-        title: 'WordPress plugin',
-        description: 'Admin dashboard widget and automated GEO checks for WordPress sites.',
-        status: 'exploring',
+        id: 'wordpress-plugin-roadmap',
+        title: 'WordPress plugin: next releases',
+        description: 'WordPress.org submission, headless WordPress support via the REST API, caching, JSON-LD schema output, and a Gutenberg editor panel. Scope and timing are not fixed.',
+        status: 'planned',
       },
       {
         id: 'alerts',
@@ -265,8 +277,14 @@ export const roadmapPhases: RoadmapPhase[] = [
       {
         id: 'scoring-recalibration',
         title: 'Scoring recalibration',
-        description: 'Periodic re-weighting of the 8 categories based on new research.',
+        description: 'Periodic re-weighting of the 9 categories based on new research.',
         status: 'exploring',
+      },
+      {
+        id: 'wordpress-dashboard-widget',
+        title: 'WordPress dashboard widget',
+        description: 'An admin dashboard widget in the WordPress plugin. Not built yet and planned after the items above.',
+        status: 'planned',
       },
       {
         id: 'team-workspace',
@@ -301,7 +319,10 @@ export const releaseCadence = [
   { version: 'v4.18.0', name: 'Quorum', status: 'available' as RoadmapStatus },
   { version: 'v4.18.1', name: 'Quorum (patch)', status: 'available' as RoadmapStatus },
   { version: 'v4.18.2', name: 'Quorum (patch)', status: 'available' as RoadmapStatus },
-  { version: 'v4.19.0', name: 'Google AI readiness / rubric v2', status: 'available' as RoadmapStatus },
   { version: 'v4.18.3', name: 'CDN/WAF patch', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.0', name: 'Google AI readiness / rubric v2', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.1', name: 'Google AI readiness (patch)', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.2', name: 'Recommendations by category (patch)', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.3', name: 'Non-Latin keyword stuffing fix (patch)', status: 'available' as RoadmapStatus },
   { version: 'v5.0.0', name: 'Black Archive', status: 'exploring' as RoadmapStatus },
 ];

@@ -77,18 +77,18 @@ export default function BenchmarkComparison({ score, grade }: BenchmarkCompariso
         <p className="text-sm leading-relaxed text-ink-soft">
           {isTopQuarter ? (
             <>
-              You're in the <strong className="font-semibold text-pass-deep">top {band.share}%</strong> of audited sites —
-              only <strong className="font-semibold text-ink">{band.domains}</strong> sites reach the {gradeLabels[grade]} band.
+              You're in the <strong className="font-semibold text-pass-deep">top {band.share}%</strong> of audited sites.
+              Only <strong className="font-semibold text-ink">{band.domains}</strong> sites reach the {gradeLabels[grade]} band.
             </>
           ) : isAboveAvg ? (
             <>
               You're <strong className="font-semibold text-pass-deep">above average</strong> (+{(score - avgScore).toFixed(1)} points),
-              but still in the {gradeLabels[grade]} band — <strong className="font-semibold text-ink">{band.share}%</strong> of sites are here.
+              but still in the {gradeLabels[grade]} band. <strong className="font-semibold text-ink">{band.share}%</strong> of sites are here.
             </>
           ) : (
             <>
               You're <strong className="font-semibold text-warn">below average</strong> ({(score - avgScore).toFixed(1)} points).
-              <strong className="font-semibold text-ink"> {band.share}%</strong> of sites are in the {gradeLabels[grade]} band — most can be reached by AI but cannot be cited with confidence.
+              <strong className="font-semibold text-ink"> {band.share}%</strong> of sites are in the {gradeLabels[grade]} band. Most can be reached by AI but cannot be cited with confidence.
             </>
           )}
         </p>

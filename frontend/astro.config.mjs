@@ -8,6 +8,7 @@ import { loadEnv } from 'vite';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import sanity from '@sanity/astro';
+import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 
 import geoReady from '../integrations/astro-geoready/index.mjs';
@@ -39,6 +40,12 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [
     react(),
+    // robots.txt points to the hand-built /sitemap.xml. This second, automatic
+    // sitemap-index.xml is still published, so it must not list pages that
+    // carry noindex: the mock report, the report shell and the visual lab.
+    sitemap({
+      filter: (page) => !/\/(report\/(?!demo\/)|visual-lab\/)/.test(page),
+    }),
     sanity({
       projectId: PUBLIC_SANITY_PROJECT_ID ?? 'uvzrnk4t',
       dataset: PUBLIC_SANITY_DATASET ?? 'production',
@@ -53,22 +60,22 @@ export default defineConfig({
     }),
     starlight({
       title: 'GeoReady Docs',
-      favicon: 'src/assets/geoready-logo.svg',
+      favicon: '/favicon.svg',
       logo: {
         src: './src/assets/geoready-logo.svg',
         replacesTitle: false,
       },
       sidebar: [
         {
-          label: 'Come iniziare',
+          label: 'Getting started',
           items: [
-            { label: 'Introduzione', link: '/docs/getting-started/' },
-            { label: 'Risoluzione problemi', link: '/docs/troubleshooting/' },
+            { label: 'Introduction', link: '/docs/getting-started/' },
+            { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
             { label: 'CI/CD', link: '/docs/ci-cd/' },
           ],
         },
         {
-          label: 'Comandi CLI',
+          label: 'CLI commands',
           items: [
             { label: 'geo audit', link: '/docs/geo-audit/' },
             { label: 'geo fix', link: '/docs/geo-fix/' },
@@ -88,7 +95,7 @@ export default defineConfig({
           items: [{ label: 'Scoring rubric', link: '/docs/scoring-rubric/' }],
         },
         {
-          label: 'Contenuti & File',
+          label: 'Content & files',
           items: [
             { label: 'llms.txt', link: '/docs/llms-txt/' },
             { label: 'AI bots reference', link: '/docs/ai-bots-reference/' },
@@ -96,9 +103,9 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Infrastruttura',
+          label: 'Infrastructure',
           items: [
-            { label: 'Contratto JSON', link: '/docs/json-contract/' },
+            { label: 'JSON contract', link: '/docs/json-contract/' },
             { label: 'LLM providers', link: '/docs/llm-providers/' },
           ],
         },

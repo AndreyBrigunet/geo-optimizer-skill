@@ -8,7 +8,7 @@
 - **Open-source engine**: GEO Optimizer
 - **Website**: https://geoready.dev
 - **Application**: https://app.geoready.dev
-- **Maintainer**: Auriti Labs (https://github.com/Auriti-Labs)
+- **Maintainer**: Juan Camilo Auriti (https://github.com/Auriti-Labs)
 - **Engine repository**: https://github.com/Auriti-Labs/geo-optimizer-skill
 - **Engine package**: https://pypi.org/project/geo-optimizer-skill/
 - **Engine documentation**: https://geoready.dev/docs/
@@ -17,18 +17,19 @@
 
 ## What GeoReady does
 
-GeoReady scores websites across 8 signal categories to measure how discoverable, readable, and citable they are to AI search engines such as ChatGPT, Perplexity, Claude, and Gemini. The scoring engine is GEO Optimizer, the MIT-licensed open-source toolkit maintained by Auriti Labs.
+GeoReady scores websites across 9 signal categories to measure how discoverable, readable, and citable they are to AI search engines such as ChatGPT, Perplexity, Claude, and Gemini. The scoring engine is GEO Optimizer, the MIT-licensed open-source toolkit maintained by Juan Camilo Auriti. Rubric v2 (nine categories) is the default since engine 4.19.0; the earlier eight-category v1 rubric is still available with `--score-version 1`. Weights: https://geoready.dev/methodology/
 
-The 8 scoring categories (max 100 points):
+The 9 scoring categories (max 100 points):
 
-1. **robots.txt** (max 18 points): authorization for AI crawlers (OAI-SearchBot, ClaudeBot, PerplexityBot, etc.)
-2. **llms.txt** (max 18 points): machine-readable standard for AI discovery
-3. **Schema JSON-LD** (max 16 points): structured data markup (Organization, WebSite, Article, FAQ)
-4. **Meta Tags** (max 14 points): title, description, canonical, Open Graph
-5. **Content Quality** (max 12 points): heading hierarchy, concrete numbers, lists, front-loaded information
-6. **Technical Signals** (max 6 points): language declaration, RSS/Atom feeds, freshness indicators
-7. **AI Discovery** (max 6 points): /.well-known/ai.txt, /ai/summary.json, /ai/faq.json, /ai/service.json
-8. **Brand & Entity Signals** (max 10 points): brand consistency, knowledge graph readiness, contact pages
+1. **Google AI readiness** (max 20 points): technical conditions Google documents for its search and AI features (indexable page, snippet controls, canonical, dates, byline, crawlable links, viewport, sitemap)
+2. **robots.txt** (max 14 points): authorization for AI crawlers (OAI-SearchBot, ClaudeBot, PerplexityBot, etc.)
+3. **Schema JSON-LD** (max 14 points): structured data markup (Organization, WebSite, Article, FAQ)
+4. **Content Quality** (max 14 points): heading hierarchy, concrete numbers, lists, front-loaded information, image alt text
+5. **Brand & Entity Signals** (max 12 points): brand consistency, knowledge graph readiness, contact pages
+6. **Meta Tags** (max 11 points): title, description, Open Graph
+7. **llms.txt** (max 6 points): machine-readable orientation file for AI agents (ignored by Google Search)
+8. **Technical Signals** (max 6 points): language declaration, RSS/Atom feeds, freshness indicators
+9. **AI Discovery** (max 3 points): /.well-known/ai.txt, /ai/summary.json, markdown content negotiation
 
 Additional checks (no score impact):
 
@@ -59,10 +60,10 @@ Also available as an MCP server for integration with AI coding assistants.
 
 ## Research foundation
 
-### Peer-reviewed papers
+### Research papers
 
 - **GEO: Generative Engine Optimization** (KDD 2024). Tested 9 optimization strategies across 10,000 queries on GEO-bench. Demonstrated that structural and authoritative signals significantly increase LLM citation rates. https://arxiv.org/abs/2311.09701
-- **AutoGEO: Automatic Generative Engine Optimization** (ICLR 2026). Automated pipelines for generative engine optimization using reinforcement learning from LLM feedback. https://openreview.net/forum?id=K8EinVWtUB
+- **AutoGEO: What Generative Search Engines Like and How to Optimize Web Content Cooperatively** (arXiv preprint, 2025). Automated pipelines for generative engine optimization using reinforcement learning from LLM feedback. https://arxiv.org/abs/2510.11438
 
 ### Industry reports
 
@@ -120,7 +121,7 @@ Also available as an MCP server for integration with AI coding assistants.
 
 ## Update policy
 
-The GEO Optimizer engine is actively maintained. Scoring methods and weights are updated when new academic research or significant industry data becomes available. The current scoring reflects KDD 2024, ICLR 2026, and 2025–2026 industry analysis. Version history: https://github.com/Auriti-Labs/geo-optimizer-skill/releases
+The GEO Optimizer engine is actively maintained. Scoring methods and weights are updated when new academic research or significant industry data becomes available. The current scoring reflects KDD 2024, AutoGEO (arXiv:2510.11438, preprint), and 2025–2026 industry analysis. Version history: https://github.com/Auriti-Labs/geo-optimizer-skill/releases
 
 ## Companion files
 

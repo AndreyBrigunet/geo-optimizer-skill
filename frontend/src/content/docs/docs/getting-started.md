@@ -4,8 +4,6 @@ description: "Install GEO Optimizer, the open-source Python CLI that audits and 
 order: 1
 ---
 
-# Getting Started
-
 Get the toolkit installed and run your first GEO audit in under 5 minutes.
 
 ---
@@ -77,11 +75,9 @@ That's it. The script fetches your homepage, `robots.txt`, and checks for `/llms
 
 ## 4. Reading the Output
 
-The audit output is divided into **8 scored categories** plus bonus checks and a final score.
+The audit output is divided into **9 scored categories** plus bonus checks and a final score out of 100. The per-category maximum is printed next to each score (`5 / 14`). The weights belong to the scoring rubric, which is the single source of truth: see [Scoring Rubric](/docs/scoring-rubric/). Rubric v2 is the default; `--score-version 1` selects the legacy v1 weights.
 
-The v2 categories are: **Google AI readiness** (20pt), **Robots.txt** (14pt), **Schema JSON-LD** (14pt), **Content** (14pt), **Brand & Entity** (12pt), **Meta Tags** (11pt), **llms.txt** (6pt), **Signals** (6pt), **AI Discovery** (3pt).
-
-Each section shows what passed and what's missing:
+Each section shows what passed and what's missing. This is an illustrative run, not output from a specific site:
 
 ```
 ▸ GOOGLE AI READINESS ────────────────── 0 / 20
@@ -119,7 +115,7 @@ Each section shows what passed and what's missing:
   ❌ No AI discovery endpoints
 
 ──────────────────────────────────────────────────────────
-  GEO SCORE   [████████░░░░░░░░░░░░]   34 / 100   ❌ CRITICAL
+  GEO SCORE   [██████░░░░░░░░░░░░░░]   31 / 100   ❌ CRITICAL
 ──────────────────────────────────────────────────────────
 ```
 
@@ -131,12 +127,12 @@ Each section shows what passed and what's missing:
 
 Follow this priority order — each step has the highest ROI before moving to the next:
 
-1. **robots.txt** — Add all 27 AI bots. Takes 5 minutes. Affects whether bots can crawl you at all. → [AI Bots Reference](ai-bots-reference.md)
-2. **llms.txt** — Generate it from your sitemap. Takes 2 minutes. → [Generating llms.txt](llms-txt.md)
-3. **Schema** — Add WebSite, Organization, FAQPage, Article. → [Schema Injector](schema-injector.md)
-4. **Brand & Entity** — Add Knowledge Graph links, about/contact pages, and consistent entity signals. → [Scoring Rubric](scoring-rubric.md)
+1. **robots.txt** — Add all 27 AI bots. Takes 5 minutes. Affects whether bots can crawl you at all. → [AI Bots Reference](/docs/ai-bots-reference/)
+2. **llms.txt** — Generate it from your sitemap. Takes 2 minutes. → [Generating llms.txt](/docs/llms-txt/)
+3. **Schema** — Add WebSite, Organization, FAQPage, Article. → [Schema Injector](/docs/schema-injector/)
+4. **Brand & Entity** — Add Knowledge Graph links, about/contact pages, and consistent entity signals. → [Scoring Rubric](/docs/scoring-rubric/)
 5. **AI Discovery** — Generate ai.txt and /ai/*.json endpoints. Use `geo fix` to auto-generate.
-6. **Content** — Add statistics, external citations, expert quotes. → [47 GEO Methods](geo-methods.md)
+6. **Content** — Add statistics, external citations, expert quotes. → [47 GEO Methods](/docs/geo-methods/)
 
 ---
 

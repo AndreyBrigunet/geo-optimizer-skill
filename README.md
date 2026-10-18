@@ -10,9 +10,9 @@ One command scores any website 0–100 on whether **ChatGPT, Perplexity, Gemini,
 
 [![PyPI](https://img.shields.io/pypi/v/geo-optimizer-skill?style=flat-square&color=3b82f6)](https://pypi.org/project/geo-optimizer-skill/)
 [![Downloads/month](https://static.pepy.tech/badge/geo-optimizer-skill/month)](https://pepy.tech/project/geo-optimizer-skill)
-[![GitHub Stars](https://img.shields.io/github/stars/auriti-labs/geo-optimizer-skill?style=flat-square&color=facc15&logo=github&label=stars)](https://github.com/auriti-labs/geo-optimizer-skill/stargazers)
+[![GitHub Stars](https://badgen.net/github/stars/auriti-labs/geo-optimizer-skill?icon=github&color=yellow&label=stars)](https://github.com/auriti-labs/geo-optimizer-skill/stargazers)
 [![CI](https://github.com/auriti-labs/geo-optimizer-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/auriti-labs/geo-optimizer-skill/actions)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-3776ab?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
 
 ```bash
@@ -21,7 +21,15 @@ uvx --from geo-optimizer-skill geo audit --url https://yoursite.com
 
 *No install, no account, no API key. Runs in seconds.*
 
-<img src="assets/demo.gif" alt="geo audit demo — AI visibility score 0-100 with prioritized fixes in one command" width="800"/>
+**No terminal?** Paste your URL into the browser version instead. Same engine, free, no account:
+
+[![Run the free web audit](https://img.shields.io/badge/Run_the_free_web_audit-geoready.dev-0D9488?style=for-the-badge)](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=hero)
+
+[![The free web audit on geoready.dev: paste a URL, get a 0–100 GEO score, nine category results and the free fixes. Live run on geoready.dev, 17 October 2026: 94/100, Excellent.](assets/web-audit.gif)](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=hero-gif)
+
+*The browser audit on geoready.dev: paste a URL, read the score, the nine category results and the free fixes. Live run on geoready.dev itself, 17 October 2026.*
+
+<img src="assets/tui-audit.svg" alt="geo audit terminal dashboard on geoready.dev: 94/100 Excellent, nine rubric v2 categories with per-category scores, extra checks and top fixes" width="800"/>
 
 [Quick Start](#quick-start) · [Free web audit, no account](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=nav) · [Docs](https://geoready.dev/docs/) · [The book](#the-book-behind-the-engine-ai-search-engineering) · [Changelog](CHANGELOG.md)
 
@@ -79,13 +87,19 @@ Two runs of `geo audit`, September 2026. `example.com` has no robots.txt, no `ll
 </td></tr>
 </table>
 
-Across 1,400+ sites audited through [GeoReady](https://geoready.dev/state-of-geo/?utm_source=github&utm_medium=readme&utm_campaign=benchmark), the median score is **57/100** and 58% publish an `llms.txt`. The sample is self-selected (people who chose to audit their site), so treat it as directional, not a census of the web.
+Across 1,800+ sites audited through [GeoReady](https://geoready.dev/state-of-geo/?utm_source=github&utm_medium=readme&utm_campaign=benchmark) (latest audit per domain, as of 17 October 2026), the median score is **59/100**, 58% publish an `llms.txt` and 76% ship JSON-LD structured data. 58% of them land in the Foundation band (36–67), 28% in Good, 12% in Critical and 2% in Excellent. Scores mix rubric v1 (engine 4.13 to 4.18) and v2 (4.19). The sample is self-selected (people who chose to audit their site), so treat it as directional, not a census of the web.
+
+<img src="assets/benchmark.svg" alt="Chart of 1,800+ audited sites: median GEO score 59 out of 100, average 56.5, 58% publish an llms.txt file, 76% ship JSON-LD structured data. Self-selected sample, 17 October 2026." width="800"/>
+
+<img src="assets/benchmark-bands.svg" alt="Chart of how 1,896 audited sites split across the GEO score bands: Foundation 57.6%, Good 28.2%, Critical 12.4%, Excellent 1.8%. Latest audit per domain, 17 October 2026; self-selected sample." width="800"/>
+
+**Where does your site land?** [Run the free audit](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=benchmark-chart) and compare your score with the median, or run `geo audit` above.
 
 ### Then it writes the fixes
 
 `geo fix` turns the audit into files: robots.txt rules for all 27 AI bots, `llms.txt`, JSON-LD schema, AI discovery endpoints, and meta tags. It previews by default and writes only with `--apply`. The score after fixes is the tool's own estimate, not a measured result.
 
-<img src="assets/fix.svg" alt="geo fix on example.com — 9 fixes generated, estimated score 8/100 to 70/100" width="800"/>
+<img src="assets/fix.svg" alt="geo fix on example.com: 9 fixes planned, estimated score 22/100 to 64/100" width="800"/>
 
 Prefer no terminal? Run the same audit free at [geoready.dev](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=proof-table) — no account needed.
 
@@ -265,7 +279,7 @@ Treat AI visibility like test coverage. The GitHub Action scores your site, fail
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.19.0
+- uses: Auriti-Labs/geo-optimizer-skill@v4.19.4
   with:
     url: https://yoursite.com
     min-score: 70        # fail the build below 70
@@ -347,7 +361,7 @@ export default defineConfig({
 | Paper | Venue | What it found |
 |-------|-------|---------------|
 | [GEO: Generative Engine Optimization](https://arxiv.org/abs/2311.09735) | **KDD 2024** | 9 methods, evaluated on GEO-bench (10,000 queries). The best (citing sources, adding quotations, adding statistics) raised source visibility by up to 40%. Gains were largest for lower-ranked sources. |
-| [AutoGEO](https://arxiv.org/abs/2510.11438) | **ICLR 2026** | Rules extracted automatically from engine preferences, up to +50.99% over the strongest KDD baseline. |
+| [AutoGEO](https://arxiv.org/abs/2510.11438) | arXiv preprint (2025) | Rules extracted automatically from engine preferences: on average about 36% over the strongest KDD method (about 21% for the smaller AutoGEO-Mini). |
 | [C-SEO Bench](https://arxiv.org/abs/2506.11097) | **NeurIPS D&B 2025** | Most content-rewriting tricks do not work. Ranking the source matters more than rewriting it. |
 
 That finding is consistent with how the tool is weighted: GEO Optimizer puts most of its weight on whether crawlers can reach and parse a page (robots.txt, `llms.txt`, schema, meta) and treats content rewriting as the smaller lever. It measures readiness signals; it cannot guarantee that any engine will cite you, and it says so.
@@ -398,6 +412,9 @@ AEO is the practice of structuring a website so AI answer engines — ChatGPT, P
 **How do I check if ChatGPT or Perplexity cites my website?**
 Run `geo citations --brand "Your Brand" --domain yoursite.com` with a Perplexity or OpenAI API key. It asks the engine customer-style questions and reports whether your brand is mentioned, whether your domain is cited as a source, and which competitors are cited instead. Perplexity returns real source URLs; OpenAI and Anthropic reveal what the model knows about your brand. No account needed for the [free web version](https://geoready.dev/tools/ai-citation-checker/?utm_source=github&utm_medium=readme&utm_campaign=faq).
 
+**How do I improve my site's GEO score?**
+Run `geo audit --url https://yoursite.com` and read the priority list, then `geo fix --url https://yoursite.com` to preview the robots.txt rules, `llms.txt`, JSON-LD schema and meta tags it would write (`--apply` writes them), and audit again. Start where the audit shows the most missing points: among the audited sites, the largest readiness gap is AI discovery files, and the median score is 59/100 (17 October 2026). To see your own list without installing anything, [run the free web audit](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=faq-start), or read the [free 160-page GEO Readiness Manual](https://geoready.dev/geo-readiness-manual/?utm_source=github&utm_medium=readme&utm_campaign=faq-start).
+
 **Does GEO Optimizer guarantee that AI engines will cite my site?**
 No. It measures the signals that make a site reachable, parseable, and quotable, and it tells you which ones are missing. Whether an engine cites you also depends on the question, the competition, and the engine itself — and answers change from run to run, which is why `geo citations` has `--runs`.
 
@@ -420,7 +437,7 @@ Yes. The MIT license permits commercial use, modification, and redistribution wi
 No. The CLI fetches only the URL you audit and any AI provider you configure with your own API key (`geo citations`). There is no telemetry, no phone-home, and no account requirement — the audit runs entirely on your machine.
 
 **How long does an audit take?**
-A single-URL audit runs in a few seconds. A sitemap batch depends on size and the `--max-urls` cap (default 25). The full test suite of 2,000+ tests runs in CI on every push across Python 3.9–3.13.
+A single-URL audit runs in a few seconds. A sitemap batch depends on size and the `--max-urls` cap (default 25). The full test suite of 2,000+ tests runs in CI on every push across Python 3.10–3.14.
 
 **Can I use it in CI/CD?**
 Yes. The GitHub Action fails the build below a score threshold and can emit SARIF findings for the GitHub Security tab. Any CI that runs Python works (GitLab, Jenkins, CircleCI), and `geo drift --fail-on warning` catches regressions between deploys.
@@ -432,7 +449,7 @@ Nothing in practice — they are two names for the same discipline. AEO (Answer 
 Traditional SEO tools optimize for Google rankings and backlinks. GEO Optimizer measures AI *citation readiness* — whether answer engines can crawl, parse, and quote your content — using signals (llms.txt, AI-bot access, schema richness, citability, topical authority) that classic SEO tools don't score. Standard technical SEO checks (meta tags, canonical URLs, Open Graph) are audited alongside them.
 
 **What research is GEO Optimizer based on?**
-Three peer-reviewed papers — *GEO: Generative Engine Optimization* (KDD 2024), *AutoGEO* (ICLR 2026), and *C-SEO Bench* (NeurIPS Datasets & Benchmarks 2025) — plus industry studies for the remaining content checks. Every check lists its source in [docs/geo-methods.md](docs/geo-methods.md).
+The *GEO: Generative Engine Optimization* paper (KDD 2024), the *C-SEO Bench* benchmark, the *AutoGEO* preprint (arXiv 2025), plus industry studies for the remaining content checks. Every check lists its source in [docs/geo-methods.md](docs/geo-methods.md).
 
 **Is there a book on Generative Engine Optimization?**
 Yes. *AI Search Engineering: A Technical Guide to Generative Engine Optimization (GEO), AI Citations, and Agent-Ready Websites* is a 992-page book by Juan Camilo Auriti, the author of GEO Optimizer, published 10 September 2026 (ISBN 979-8172934568). The scoring model it describes is the one implemented in this engine. See [the book](#the-book-behind-the-engine-ai-search-engineering).
@@ -441,7 +458,7 @@ Yes. *AI Search Engineering: A Technical Guide to Generative Engine Optimization
 
 ## Roadmap
 
-Focused release waves, not noisy patches: 85 releases since February 2026, currently **v4.19.0**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
+Focused release waves, not noisy patches: 90 releases since February 2026, currently **v4.19.4**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
@@ -475,10 +492,10 @@ pytest tests/ -v   # 2,000+ tests, HTTP mocked
 
 GEO Optimizer is built and maintained by [Juan Camilo Auriti](https://www.linkedin.com/in/juancamiloauriti/) ([@JuanAuriti](https://x.com/JuanAuriti)) under [Auriti Labs](https://github.com/auriti-labs). If it saved you time, a ⭐ helps other people find it, and [GitHub Sponsors](https://github.com/sponsors/auriti) funds new research-backed checks.
 
-[![Star on GitHub](https://img.shields.io/github/stars/auriti-labs/geo-optimizer-skill?style=for-the-badge&color=facc15&logo=github&label=Star)](https://github.com/auriti-labs/geo-optimizer-skill/stargazers)
+[![Star on GitHub](https://img.shields.io/badge/Star_on_GitHub-%E2%98%85-facc15?style=for-the-badge&logo=github&logoColor=black)](https://github.com/auriti-labs/geo-optimizer-skill/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?style=for-the-badge&logo=GitHub-Sponsors&logoColor=white)](https://github.com/sponsors/auriti)
 [![Free hosted audit](https://img.shields.io/badge/Free_hosted_audit-geoready.dev-0D9488?style=for-the-badge)](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=footer)
 
-**MIT License**
+**MIT License** · [Name and logo policy](TRADEMARKS.md)
 
 </div>

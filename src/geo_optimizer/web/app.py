@@ -823,6 +823,18 @@ async def audit_post(request: Request, body: AuditRequest):
 _LLMS_MIN_PER_SECTION = 1
 _LLMS_MAX_PER_SECTION = 20
 # Timeout complessivo per discovery + fetch sitemap + generazione (secondi)
+# nginx cuts the proxy at 60 s (its default proxy_read_timeout). The web audit has to
+# give up a few seconds earlier: with the same 60 s, nginx always won the race and
+# answered with its own HTML 504 (a broken image for /badge) before the friendly
+# error below, or the "Error" badge, could be sent.
+_AUDIT_TIMEOUT_S = 55.0
+
+# Shown on a 504: the web audit is capped (see _AUDIT_TIMEOUT_S), the CLI is not.
+_AUDIT_TIMEOUT_DETAIL = (
+    "Audit timeout: the site took too long to respond (the web audit stops after about a minute). "
+    "Slow sites can still be audited with the CLI: geo audit --url <url>"
+)
+
 _LLMS_GENERATE_TIMEOUT = 30
 
 
@@ -1137,7 +1149,8 @@ async def report(report_id: str):
     from geo_optimizer.cli.html_formatter import format_audit_html
 
     result = _dict_to_audit_result(data)
-    return HTMLResponse(content=format_audit_html(result))
+    # I report riguardano domini di terzi: mai in indice, anche se linkati altrove
+    return HTMLResponse(content=format_audit_html(result), headers={"X-Robots-Tag": "noindex, nofollow"})
 
 
 @app.get("/api/audit/pdf")
@@ -1196,16 +1209,13 @@ async def audit_pdf(
 
             audit_result = await asyncio.wait_for(
                 asyncio.to_thread(run_full_audit, url),
-                timeout=60.0,
+                timeout=_AUDIT_TIMEOUT_S,
             )
             data = _audit_result_to_dict(audit_result)
             await _set_cached(url, data)
             result = audit_result
         except asyncio.TimeoutError as exc:
-            raise HTTPException(
-                status_code=504,
-                detail="Audit timeout: site takes too long to respond.",
-            ) from exc
+            raise HTTPException(status_code=504, detail=_AUDIT_TIMEOUT_DETAIL) from exc
         except Exception as e:
             logger.error("PDF audit error for %s: %s", url, e)
             raise HTTPException(
@@ -1268,10 +1278,10 @@ async def badge(
             from geo_optimizer.core.audit import run_full_audit
 
             # Run in separate thread to avoid blocking the event loop
-            # Timeout 60s to avoid blocking the event loop (fix #82)
+            # Bounded wait to avoid blocking the event loop (fix #82)
             result = await asyncio.wait_for(
                 asyncio.to_thread(run_full_audit, url),
-                timeout=60.0,
+                timeout=_AUDIT_TIMEOUT_S,
             )
             data = _audit_result_to_dict(result)
             await _set_cached(url, data)
@@ -1279,7 +1289,7 @@ async def badge(
             band = data["band"]
         except asyncio.TimeoutError:
             # Timeout: show badge with "Error" text (fix #152)
-            logger.warning("Badge audit timeout (60s) per URL: %s", url)
+            logger.warning("Badge audit timeout (%.0fs) per URL: %s", _AUDIT_TIMEOUT_S, url)
             from geo_optimizer.web.badge import generate_badge_svg
 
             svg = generate_badge_svg(0, "critical", label=label, error=True)
@@ -1364,7 +1374,7 @@ async def badge_endpoint(
 
             result = await asyncio.wait_for(
                 asyncio.to_thread(run_full_audit, url),
-                timeout=60.0,
+                timeout=_AUDIT_TIMEOUT_S,
             )
             data = _audit_result_to_dict(result)
             await _set_cached(url, data)
@@ -1405,8 +1415,14 @@ def _normalize_url(raw: str) -> tuple[str | None, str]:
     url = normalize_url_scheme(url)
 
     # Must have a hostname with at least one dot (real domain)
-    parsed = urlparse(url)
-    if not parsed.hostname or "." not in parsed.hostname:
+    # urlparse raises ValueError on stray brackets ("Invalid IPv6 URL"), e.g. a
+    # badge snippet pasted with its Markdown tail: https://site.com)](https://...
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+    except ValueError:
+        return None, "Invalid URL: a valid domain is required (e.g. https://example.com)"
+    if not hostname or "." not in hostname:
         return None, "Invalid URL: a valid domain is required (e.g. https://example.com)"
 
     return url, ""
@@ -1442,17 +1458,14 @@ async def _run_audit(url: str) -> JSONResponse:
     try:
         from geo_optimizer.core.audit import run_full_audit
 
-        # Run in separate thread with 60s timeout to avoid blocking the event loop (fix #82)
+        # Run in a separate thread with a bounded wait to avoid blocking the event loop (fix #82)
         result = await asyncio.wait_for(
             asyncio.to_thread(run_full_audit, url),
-            timeout=60.0,
+            timeout=_AUDIT_TIMEOUT_S,
         )
     except asyncio.TimeoutError as exc:
-        logger.warning("Audit timeout (60s) for URL: %s", url)
-        raise HTTPException(
-            status_code=504,
-            detail="Audit timeout: site takes too long to respond.",
-        ) from exc
+        logger.warning("Audit timeout (%.0fs) for URL: %s", _AUDIT_TIMEOUT_S, url)
+        raise HTTPException(status_code=504, detail=_AUDIT_TIMEOUT_DETAIL) from exc
     except Exception as e:
         logger.error("Audit error for %s: %s", url, e)
         raise HTTPException(
@@ -1539,10 +1552,20 @@ def _audit_result_to_dict(result) -> dict:
     # JSON contract version — consumers must handle missing (default 0 = pre-v1)
     base["schema_version"] = 1
 
+    # Additive field: recommendations grouped by producing category (+ "other"). Same strings as
+    # base["recommendations"]; an empty dict means the category is unknown (legacy cached result).
+    base["recommendations_by_category"] = {
+        category: list(items) for category, items in result.recommendations_by_category.items()
+    }
+
     # Categorie della rubrica del risultato sempre presenti (0 se non eseguite); fallback v1 per risultati legacy
     breakdown_keys = result.score_max or CATEGORY_MAX
     base["score_breakdown"] = {k: base.get("score_breakdown", {}).get(k, 0) for k in breakdown_keys}
     base["score_max"] = dict(breakdown_keys)
+    # score_breakdown elenca solo le categorie della rubrica (contratto JSON): la
+    # penalità per segnali negativi restava invisibile e la somma delle categorie
+    # non tornava con score. Chiave top-level opzionale, valore <= 0.
+    base["score_penalty"] = (result.score_breakdown or {}).get("negative_penalty", 0)
 
     # Add the "checks" mapping (structure expected by the frontend and platform)
     # Keys under checks must match gate_service.CATEGORY_KEY_MAP and analytics_dashboard
@@ -1735,6 +1758,7 @@ def _dict_to_audit_result(data: dict):
             has_front_loading=c.get("has_front_loading", False),
         ),
         recommendations=data.get("recommendations", []),
+        recommendations_by_category=data.get("recommendations_by_category", {}),
         http_status=data.get("http_status", 0),
         page_size=data.get("page_size", 0),
         score_breakdown=data.get("score_breakdown", {}),
@@ -1983,7 +2007,7 @@ def _dict_to_audit_result(data: dict):
 #         "# GEO Optimizer\n\n"
 #         "> Open-source toolkit to audit, fix, and optimize any website for AI search engine visibility.\n"
 #         "> Scores 0-100 across 8 categories and 47 research-backed methods.\n"
-#         "> Based on Princeton KDD 2024 and AutoGEO ICLR 2026 peer-reviewed research.\n"
+#         "> Based on Princeton KDD 2024 and AutoGEO (arXiv:2510.11438, preprint) research.\n"
 #         "> MIT License. Free for commercial and personal use.\n\n"
 #         "## What GEO Optimizer Does\n\n"
 #         "GEO Optimizer audits any publicly accessible URL — regardless of CMS, framework, or hosting — "
@@ -2052,7 +2076,7 @@ def _dict_to_audit_result(data: dict):
 #         "Package and version history\n\n"
 #         "## Research Foundation\n\n"
 #         "- GEO: Generative Engine Optimization — Princeton NLP, KDD 2024 — https://arxiv.org/abs/2311.09735\n"
-#         "- AutoGEO: Automatic GEO — Carnegie Mellon, ICLR 2026 — https://arxiv.org/abs/2510.11438\n"
+#         "- AutoGEO: Automatic GEO — Carnegie Mellon, arXiv preprint 2025 — https://arxiv.org/abs/2510.11438\n"
 #         "- llms.txt specification — Answer.AI — https://llmstxt.org/\n"
 #         "- geo-checklist.dev standard — https://geo-checklist.dev/\n\n"
 #         "## Optional\n\n"
@@ -2399,6 +2423,11 @@ async def analyze_logs(request: Request):
             detail="Missing or invalid authentication token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    # Unico POST senza rate limit: accetta upload fino a 10 MB e li analizza in un
+    # thread, quindi senza limite un singolo client poteva saturare CPU e disco.
+    # Il controllo avviene prima di leggere il body.
+    if not await _check_rate_limit(_get_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Too many requests. Try again soon.")
 
     try:
         form = await request.form()

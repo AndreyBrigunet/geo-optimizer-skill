@@ -3,17 +3,18 @@ import Shell from '../components/Shell.astro';
 import CompareContainer from '../components/compare/CompareContainer';
 import CompareSurface from '../components/product/CompareSurface.astro';
 
-// Le 8 categorie di segnale e i rispettivi pesi (totale 100).
-// Allineati a SCORING in src/geo_optimizer/models/config.py.
+// Le 9 categorie di segnale del rubric v2 (default dal motore 4.19.0) e i rispettivi pesi (totale 100).
+// Allineati a CATEGORY_MAX_V2 in src/geo_optimizer/models/config.py.
 const SIGNAL_CATEGORIES = [
-  ['robots.txt', 18, 'Whether AI crawlers can reach the site and whether the file invites citation-oriented bots rather than blocking them by default.'],
-  ['llms.txt', 18, 'Presence and quality of a root-level llms.txt: title, summary, sectioned links, and link depth that orient AI systems to the right pages.'],
-  ['Schema JSON-LD', 16, 'Valid structured data — Organization, WebSite, Article, FAQ — that lets engines disambiguate entities and pull facts confidently.'],
-  ['Meta tags', 14, 'Title, description, canonical, and Open Graph tags that keep the page identifiable and free of duplication.'],
-  ['Content', 12, 'Heading hierarchy, front-loaded answers, lists, and the numbers and links that make passages quotable.'],
-  ['Brand & entity', 10, 'Naming coherence, knowledge-graph readiness, and about/contact clarity that tie pages to a recognizable entity.'],
+  ['Google AI readiness', 20, 'The technical conditions Google documents for its search and AI features: an indexable page, snippet controls, a single canonical, consistent dates, a byline, crawlable links, a viewport tag, and a declared sitemap.'],
+  ['robots.txt', 14, 'Whether AI crawlers can reach the site and whether the file invites citation-oriented bots rather than blocking them by default.'],
+  ['Schema JSON-LD', 14, 'Valid structured data — Organization, WebSite, Article, FAQ — that lets engines disambiguate entities and pull facts confidently.'],
+  ['Content', 14, 'Heading hierarchy, front-loaded answers, lists, image alt text, and the numbers and links that make passages quotable.'],
+  ['Brand & entity', 12, 'Naming coherence, knowledge-graph readiness, and about/contact clarity that tie pages to a recognizable entity.'],
+  ['Meta tags', 11, 'Title, description, and Open Graph tags that keep the page identifiable.'],
+  ['llms.txt', 6, 'Presence and quality of a root-level llms.txt: title, summary, sectioned links, and link depth that orient AI agents to the right pages. Google states that its AI features do not use this file.'],
   ['Signals', 6, 'Declared language, RSS, and freshness indicators that help engines judge currency.'],
-  ['AI discovery', 6, 'Machine-readable endpoints such as /.well-known/ai.txt and JSON summaries that expose the site to AI tooling.'],
+  ['AI discovery', 3, 'Machine-readable endpoints such as /.well-known/ai.txt and JSON summaries that expose the site to AI tooling.'],
 ] as const;
 
 // Le bande di punteggio, identiche a SCORE_BANDS in config.py.
@@ -30,12 +31,12 @@ const faqs = [
   {
     question: 'What does a head-to-head GEO comparison actually measure?',
     answer:
-      'It scores two sites across the same 8 signal categories used in the standard GEO audit — robots.txt, llms.txt, schema, meta tags, content, brand and entity signals, freshness signals, and AI discovery — and shows the gap category by category. The output is a relative readiness picture, not a prediction that a specific model will cite either site.',
+      'It scores two sites across the same nine signal categories used in the standard GEO audit — Google AI readiness, robots.txt, schema, content, brand and entity signals, meta tags, llms.txt, freshness signals, and AI discovery — and shows the gap category by category. The output is a relative readiness picture, not a prediction that a specific model will cite either site.',
   },
   {
     question: 'Is the comparison free, and do I need an account?',
     answer:
-      'The two-site comparison is free and runs without an account. It returns a side-by-side GEO score for each URL across all 8 categories. Saving reports and tracking changes over time are account features, but the comparison itself is not gated.',
+      'The two-site comparison is free and runs without an account. It returns a side-by-side GEO score for each URL across all nine categories. Saving reports and tracking changes over time are account features, but the comparison itself is not gated.',
   },
   {
     question: 'When should I compare two sites instead of analyzing several competitors?',
@@ -55,7 +56,7 @@ const faqs = [
   {
     question: 'How should I read a large gap between two sites?',
     answer:
-      'Read it by category, not by the headline number. A 20-point gap concentrated in robots.txt or llms.txt is a fast, technical fix; the same gap spread across content and brand signals reflects slower editorial work. Start with the category where the difference is largest and the effort is lowest.',
+      'Read it by category, not by the headline number. A 20-point gap concentrated in Google AI readiness or robots.txt is mostly a technical fix; the same gap spread across content and brand signals reflects slower editorial work. Start with the category where the difference is largest and the effort is lowest.',
   },
 ];
 ---
@@ -80,7 +81,7 @@ const faqs = [
           <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink-soft md:text-lg">
             Enter two URLs below and run a free head-to-head GEO audit. See which site is more
             visible to AI answer engines like ChatGPT, Perplexity, and Claude — scored across the
-            same 8 signal categories, side by side.
+            same nine signal categories, side by side.
           </p>
 
           <div class="mt-8 grid gap-3 sm:grid-cols-3">
@@ -121,7 +122,7 @@ const faqs = [
         </p>
       </div>
       {[
-        ['Score', 'GEO Score across 8 signal categories.'],
+        ['Score', 'GEO Score across nine signal categories.'],
         ['Citability', 'Citation-oriented content and source signals.'],
         ['Readiness', 'Technical access, structure, and AI discovery.'],
       ].map(([label, text]) => (
@@ -169,19 +170,22 @@ const faqs = [
         </p>
       </section>
 
-      {/* What the 8 categories measure */}
+      {/* What the 9 categories measure */}
       <section>
         <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-          <h2>What the 8 signal categories measure</h2>
-          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · SCORING · Σ = 100 pts</p>
+          <h2>What the 9 signal categories measure</h2>
+          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · CATEGORY_MAX_V2 · Σ = 100 pts</p>
         </div>
         <p class="mt-4">
-          Both sites are scored on the same eight categories used in the standard
-          GEO audit, weighted to a total of 100 points. The weights reflect how much
-          each category influences whether an AI answer engine can reach, understand,
-          and quote a page. Crawlability and orientation files carry the most weight
-          because they gate everything downstream: if a bot cannot fetch the page or
-          find your key URLs, the quality of the content never gets a chance to matter.
+          Both sites are scored on the same nine categories used in the standard
+          GEO audit (rubric v2, the default since engine 4.19.0), weighted to a total
+          of 100 points. The weights reflect how much each category influences whether
+          an AI answer engine can reach, understand, and quote a page. Google AI
+          readiness carries the most weight, followed by robots.txt, schema, and
+          content. Access comes first in practice: if a bot cannot fetch an indexable
+          page, the quality of the content never gets a chance to matter. The
+          <a href="/methodology/">methodology page</a> and the
+          <a href="/docs/scoring-rubric/">scoring rubric</a> list every check.
         </p>
         <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
           <table class="w-full text-left text-sm">
@@ -298,7 +302,7 @@ const faqs = [
       "@id": "https://geoready.dev/#organization"
     },
     "datePublished": "2026-05-12",
-    "dateModified": "2026-08-31",
+    "dateModified": "2026-10-14",
     "mainEntity": {
       "@type": "WebApplication",
       "@id": "https://geoready.dev/compare/#tool",

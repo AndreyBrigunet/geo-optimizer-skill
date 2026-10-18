@@ -5,20 +5,21 @@ import StatsBar from '../components/StatsBar';
 import { getBenchmark } from '../utils/benchmark';
 import { getPublicStats } from '../utils/publicStats';
 
-// Gli otto pesi di scoring, come pubblicati in models/config.py (SCORING).
-// Sono qui perché la pagina rivendica "auditable scoring": affermarlo e non mostrarlo
-// è la stessa opacità che il prodotto critica. Tenere allineato ai pesi reali.
+// I nove pesi della rubrica v2 (default dalla 4.19.0), come in models/config.py
+// (CATEGORY_MAX_V2). Sono qui perché la pagina rivendica "auditable scoring": affermarlo
+// e non mostrarlo è la stessa opacità che il prodotto critica. Tenere allineato ai pesi reali.
 // La quarta colonna è la chiave di categoria dello score_breakdown JSON: è l'ID
 // che il rail dei gate mostra come annotazione, quindi deve restare quella vera.
 const SCORING_WEIGHTS = [
-  ['Robots.txt', 18, 'Whether citation crawlers are allowed to fetch the site at all.', 'robots'],
-  ['llms.txt', 18, 'Presence and depth of the root-level orientation file, including llms-full.txt.', 'llms'],
-  ['Schema JSON-LD', 16, 'Valid structured data: Organization, WebSite, Article, FAQ.', 'schema'],
-  ['Meta tags', 14, 'Title, description, canonical, and Open Graph completeness.', 'meta'],
-  ['Content', 12, 'Heading hierarchy, word count, lists, front-loaded answers.', 'content'],
+  ['Google AI readiness', 20, 'Indexable page, snippet controls, canonical, dates, byline, crawlable links, viewport, sitemap.', 'google_ai'],
+  ['Robots.txt', 14, 'Whether citation crawlers are allowed to fetch the site at all.', 'robots'],
+  ['Schema JSON-LD', 14, 'Valid structured data: Organization, WebSite, Article, FAQ.', 'schema'],
+  ['Content', 14, 'Heading hierarchy, word count, lists, front-loaded answers, image alt text.', 'content'],
+  ['Brand & entity', 12, 'Naming coherence, Knowledge Graph readiness, topic authority.', 'brand_entity'],
+  ['Meta tags', 11, 'Title, description, canonical, and Open Graph completeness.', 'meta'],
+  ['llms.txt', 6, 'Presence and depth of the root-level orientation file, including llms-full.txt.', 'llms'],
   ['Signals', 6, 'Declared language, feed availability, freshness date.', 'signals'],
-  ['AI discovery', 6, 'The .well-known/ai.txt and /ai/*.json endpoints.', 'ai_discovery'],
-  ['Brand & entity', 10, 'Naming coherence, Knowledge Graph readiness, topic authority.', 'brand_entity'],
+  ['AI discovery', 3, 'The .well-known/ai.txt and /ai/*.json endpoints.', 'ai_discovery'],
 ] as const;
 
 // Aggregati della coorte, letti a build time da GET /api/public/benchmark: erano
@@ -41,15 +42,15 @@ const projectChecks = [
     link: { label: 'View on GitHub', href: 'https://github.com/Auriti-Labs/geo-optimizer-skill' },
   },
   {
-    title: 'Research-backed',
-    desc: 'Scoring grounded in Princeton KDD 2024 and AutoGEO ICLR 2026 research on AI search retrieval.',
+    title: 'Published sources',
+    desc: '9 of the 47 citability checks come from the methods tested in the Princeton KDD 2024 GEO paper. AutoGEO (arXiv:2510.11438) is a preprint.',
     source: 'arXiv 2311.09735 · 2510.11438',
     link: { label: 'Read the research', href: '/research/' },
   },
   {
     title: 'Auditable scoring',
     desc: 'Every signal is traceable to a published rule. Score breakdowns show per-category contributions.',
-    source: 'models/config.py · SCORING',
+    source: 'models/config.py · CATEGORY_MAX_V2',
     link: null,
   },
   {
@@ -60,7 +61,7 @@ const projectChecks = [
   },
   {
     title: 'Documented in print',
-    desc: 'The methodology behind this tool is written up in full in AI Search Engineering — 992 pages on GEO, AI citations, and agent-ready websites.',
+    desc: 'The methodology behind this tool is written up in full in AI Search Engineering, 992 pages on GEO, AI citations, and agent-ready websites.',
     source: 'ISBN 979-8172934568',
     link: { label: 'About the book', href: '/book/' },
   },
@@ -69,21 +70,21 @@ const projectChecks = [
 const actions = [
   {
     label: 'Run a free check',
-    desc: 'Enter any public URL above — no account required.',
+    desc: 'Enter any public URL above. No account required.',
     href: '#audit-form',
     badge: 'Available now',
     badgeTone: 'pass',
   },
   {
     label: 'Use the open-source CLI',
-    desc: 'pip install geo-optimizer-skill — scoring, access simulation, crawler log analysis. MIT licensed.',
+    desc: 'pip install geo-optimizer-skill: scoring, access simulation, crawler log analysis. MIT licensed.',
     href: 'https://github.com/Auriti-Labs/geo-optimizer-skill',
     badge: 'Free forever',
     badgeTone: 'pass',
   },
   {
     label: 'Read the research',
-    desc: 'Princeton KDD 2024 and AutoGEO ICLR 2026 behind the scoring methodology.',
+    desc: 'Princeton KDD 2024 and AutoGEO (arXiv:2510.11438, preprint) behind the scoring methodology.',
     href: '/research/',
     badge: 'Documentation',
     badgeTone: 'neutral',
@@ -104,7 +105,7 @@ const faqs = [
   },
   {
     q: 'What does GeoReady check?',
-    a: 'GeoReady audits 8 categories: robots.txt, llms.txt, JSON-LD schema, meta tags, content quality, technical signals, AI discovery paths, and brand entity signals. It also detects prompt injection patterns and negative signals through the same open-source GEO Optimizer engine. The CLI additionally offers Agent Access Audit (bot vs browser access simulation via `geo access`) and AI Crawler Activity Analytics (server log parsing via `geo logs`).',
+    a: 'GeoReady audits 9 categories: Google AI readiness, robots.txt, JSON-LD schema, content quality, brand entity signals, meta tags, llms.txt, technical signals, and AI discovery paths. It also detects prompt injection patterns and negative signals through the same open-source GEO Optimizer engine. The CLI additionally offers Agent Access Audit (bot vs browser access simulation via `geo access`) and AI Crawler Activity Analytics (server log parsing via `geo logs`).',
   },
   {
     q: 'How is GEO different from traditional SEO?',
@@ -133,31 +134,75 @@ const faqSchema = {
   }))
 };
 
+// WebPage della homepage, emesso come blocco JSON-LD SEPARATO e non dentro il @graph
+// globale di Layout.astro, per due motivi verificati sul motore di audit:
+//  1. il check di freschezza (`signals`) legge `dateModified` solo al primo livello di
+//     ogni blocco JSON-LD, quindi una data annidata in @graph non verrebbe vista;
+//  2. il @graph di Layout è emesso su ogni pagina, e una data di aggiornamento valida
+//     per la sola homepage non deve finire su tutte le altre.
+//
+// `dateModified` è la data della lettura del benchmark mostrata in pagina (la stessa di
+// <time datetime> più sotto): è l'ultimo dato che cambia davvero su questa pagina, e non
+// la data della build, che cambierebbe a ogni deploy anche senza modifiche di contenuto.
+// `datePublished` è omesso apposta: la data di lancio reale non è nel repository e non
+// va inventata.
+//
+// `author` riporta il nome oltre all'@id: un riferimento nudo `{"@id": ...}` non ha
+// `name`, e il check di byline accetta solo un autore dichiarato con il nome.
+// Titolo unico della pagina: lo usano sia <title>/og:title (via Shell) sia il `name` del
+// WebPage. Con due stringhe scritte a mano basta una modifica a una sola per farle divergere.
+//
+// Il brand sta PRIMA del separatore. Il check di coerenza del nome (brand_entity) taglia
+// title e og:title al primo separatore e confronta ciò che sta a sinistra con H1 e schema. Con
+// il brand in coda, a sinistra restava la descrizione ("AI Visibility Audit & Citation
+// Monitoring"), che non coincide con nessun'altra fonte, e il nome risultava incoerente
+// anche se GeoReady compariva ovunque.
+const PAGE_TITLE = "GeoReady | AI Visibility Audit & Citation Monitoring";
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://geoready.dev/#webpage",
+  "url": "https://geoready.dev/",
+  "name": PAGE_TITLE,
+  "inLanguage": "en",
+  "isPartOf": { "@id": "https://geoready.dev/#website" },
+  "about": { "@id": "https://geoready.dev/#webapp" },
+  "publisher": { "@id": "https://geoready.dev/#organization" },
+  "author": {
+    "@type": "Person",
+    "@id": "https://geoready.dev/#founder",
+    "name": "Juan Camilo Auriti"
+  },
+  "dateModified": BENCHMARK.asOfIso
+};
+
 // Percentuali per le barre del pannello di run: dati reali del benchmark.
 const avgPct = Math.max(0, Math.min(100, Number(BENCHMARK.average) || 0));
 const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
 ---
 
 <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+<script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
 <Shell
-  title="AI Visibility Audit & Citation Monitoring — GeoReady"
-  description="Free AI visibility audit plus paid GEO monitoring. Check if ChatGPT, Perplexity, Claude, and Gemini can reach and cite your site — then track changes."
+  title={PAGE_TITLE}
+  description="Free AI visibility audit plus paid GEO monitoring. Check if ChatGPT, Perplexity, Claude, and Gemini can reach and cite your site, then track changes."
   canonical="https://geoready.dev/"
 >
-  {/* Hero — the trigger console and the eight-gate rail */}
+  {/* Hero — the trigger console and the nine-gate rail */}
   <section id="audit-form" data-hero-bleed class="world-console bg-paper font-text text-ink">
     <div class="mx-auto max-w-7xl px-6 pt-14 pb-16 md:pt-20 md:pb-20">
       <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)] lg:items-start">
         <div>
           <p class="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-pass-deep">AI Visibility Audit · Citation Monitoring</p>
           <h1 class="font-head text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] md:text-6xl">
-            Audit your AI visibility — then monitor it over&nbsp;time.
+            Audit your AI visibility, then monitor it over&nbsp;time.
           </h1>
           <p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
             Buyers ask ChatGPT, Perplexity, Claude, and Gemini before they click a search result.
             GeoReady is a Generative Engine Optimization (GEO) platform that verifies your URL can be
-            reached, understood, and cited by those answer engines, gives you a 0–100 score and
-            prioritized fixes across 8 signal categories — then re-checks
+            reached, understood, and cited by those answer engines, gives you a 0-100 score and
+            prioritized fixes across 9 signal categories, then re-checks
             weekly, so you see whether your visibility improves or regresses over time.
           </p>
 
@@ -169,7 +214,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
             <span class="font-mono text-[11px] uppercase tracking-[0.12em]">POST /api/audit</span>
           </p>
           <p class="mt-4 border-t border-rail/60 pt-3 text-[13px] leading-relaxed text-ink-soft">
-            A single audit is a photograph — a point in time. Monitoring is the video sequence:
+            A single audit is a photograph of one point in time. Monitoring is the video sequence:
             it re-runs the same scoring on a schedule and tells you when your visibility moves.
             <a
               href="/pricing/"
@@ -227,19 +272,19 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
           </div>
           <div class="border-t border-rail px-5 py-3">
             <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">
-              GET /api/public/benchmark · as of {BENCHMARK.asOf} · <a href="/state-of-geo/" class="underline underline-offset-2 hover:text-ink">live benchmark</a>
+              GET /api/public/benchmark · as of <time datetime={BENCHMARK.asOfIso}>{BENCHMARK.asOf}</time> · <a href="/state-of-geo/" class="underline underline-offset-2 hover:text-ink">live benchmark</a>
             </p>
           </div>
         </aside>
       </div>
 
-      {/* The eight gates, with their published weights */}
+      {/* The nine gates, with their published weights */}
       <div class="mt-14">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 class="font-head text-xl font-extrabold tracking-[-0.02em]">The eight gates every audit runs</h2>
-          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · SCORING · Σ = 100 pts</p>
+          <h2 class="font-head text-xl font-extrabold tracking-[-0.02em]">The nine gates every audit runs</h2>
+          <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">models/config.py · CATEGORY_MAX_V2 · Σ = 100 pts</p>
         </div>
-        <ol class="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2 lg:grid-cols-4">
+        <ol class="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2 lg:grid-cols-3">
           {SCORING_WEIGHTS.map(([name, points, what, key], i) => (
             <li class="gate bg-white" style={`--i:${i}`}>
               <details class="group">
@@ -324,8 +369,8 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
             <span class="mr-2 font-mono text-[12px] font-medium tabular-nums text-ink-mute align-middle">2</span>Get a GEO score
           </h3>
           <p class="mt-2 max-w-3xl leading-relaxed text-ink-soft">
-            The scan evaluates eight signal categories and returns a 0–100 score with a
-            per-category breakdown. These are the published weights — the same numbers the
+            The scan evaluates nine signal categories and returns a 0-100 score with a
+            per-category breakdown. These are the published weights, the same numbers the
             open-source engine uses, so any score can be recomputed by hand:
           </p>
           <div class="mt-4 overflow-x-auto rounded-[4px] border border-rail bg-white">
@@ -354,7 +399,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
             </table>
           </div>
           <p class="mt-3 font-mono text-[12px] tabular-nums text-ink-mute">
-            Bands: 86–100 excellent · 68–85 good · 36–67 foundation · 0–35 critical.
+            Bands: 86-100 excellent · 68-85 good · 36-67 foundation · 0-35 critical.
           </p>
         </div>
         <div class="max-w-3xl">
@@ -374,7 +419,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
       <div class="mt-12 overflow-hidden rounded-[4px] bg-well text-well-ink">
         <div class="flex items-center justify-between gap-3 border-b border-well-ink/15 px-6 py-3">
           <h3 class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-well-mute">Run summary · what a typical site scores</h3>
-          <span class="font-mono text-[11px] tracking-[0.08em] text-pass">exit 0</span>
+          <span class="font-mono text-[11px] tracking-[0.08em] text-pass-light">exit 0</span>
         </div>
         <figure class="px-6 py-6 md:px-8">
           <blockquote>
@@ -389,7 +434,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
           </blockquote>
           <figcaption class="mt-4 font-mono text-[12px] leading-relaxed text-well-mute">
             GeoReady benchmark, {BENCHMARK.sampleLabel}, as of {BENCHMARK.asOf}.
-            Latest audit per domain, aggregates only — the sample is self-selected, so read it
+            Latest audit per domain, aggregates only. The sample is self-selected, so read it
             as a baseline among sites that chose to measure.
             <a href="/state-of-geo/" class="underline underline-offset-2 hover:text-well-ink">See the live benchmark</a>.
           </figcaption>
@@ -480,7 +525,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
         answers one question: what does your site look like to AI crawlers
         <em class="font-medium not-italic text-ink">right now</em>. It cannot tell you whether that
         changes with your edits. Monitoring runs the same open-source scoring engine on a schedule,
-        keeps the score history, and flags the days your visibility moves — up or down. It measures your
+        keeps the score history, and flags the days your visibility moves, up or down. It measures your
         site. It does not promise a ranking.
       </p>
 
@@ -524,7 +569,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
             For consultants running a portfolio of sites and client-ready reports.
           </p>
           <div class="mt-3 border-l-2 border-pass bg-pass-wash/40 px-3 py-2 text-sm text-ink">
-            AI citation tracking — <span class="font-semibold">5 automated Perplexity checks per day</span>.
+            AI citation tracking: <span class="font-semibold">5 automated Perplexity checks per day</span>.
           </div>
           <a
             href="/pricing/"
@@ -563,7 +608,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
 
       <p class="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-mute">
         <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-pass-deep">Free stays free</span>
-        <span>— the audit, the CLI, and 5 runs a day never expire or paywall.</span>
+        <span>The audit, the CLI, and 5 runs a day never expire or paywall.</span>
         <a
           href="/pricing/"
           data-cta="home_free_note_pricing"
@@ -602,7 +647,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
     <div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
       <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] md:text-3xl">
-          Auditable by design — every number below is public
+          Auditable by design: every number below is public
         </h2>
         <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">
           GET / api / public / benchmark · GET /api/stats
@@ -611,15 +656,15 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
 
       <dl class="mt-8 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail sm:grid-cols-2 lg:grid-cols-3">
         <div class="flex flex-col gap-1 bg-white p-5">
-          <dt class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">GitHub stars — MIT open source</dt>
+          <dt class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">GitHub stars (MIT open source)</dt>
           <dd class="font-head text-2xl font-extrabold tabular-nums text-ink">
             {PUBLIC_STATS.github_stars}
             <span class="ml-1 font-mono text-xs font-medium text-ink-mute">★</span>
           </dd>
-          <p class="text-sm leading-relaxed text-ink-soft">
+          <dd class="text-sm leading-relaxed text-ink-soft">
             Full methodology and scoring weights in public. No proprietary scoring.
             <a href="https://github.com/Auriti-Labs/geo-optimizer-skill" target="_blank" rel="noopener" class="font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep">View on GitHub</a>
-          </p>
+          </dd>
         </div>
 
         <div class="flex flex-col gap-1 bg-white p-5">
@@ -627,10 +672,10 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
           <dd class="font-head text-2xl font-extrabold tabular-nums text-ink">
             {BENCHMARK.average}<span class="ml-1 font-mono text-xs font-medium text-ink-mute">/100 avg</span>
           </dd>
-          <p class="text-sm leading-relaxed text-ink-soft">
+          <dd class="text-sm leading-relaxed text-ink-soft">
             Only {BENCHMARK.llmsTxtAdoption} of audited sites publish an <code class="font-mono text-ink">llms.txt</code>.
             <a href="/state-of-geo/" class="font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep">Browse the live benchmark</a>
-          </p>
+          </dd>
         </div>
 
         <div class="flex flex-col gap-1 bg-white p-5">
@@ -638,11 +683,11 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
           <dd class="font-head text-2xl font-extrabold tabular-nums text-ink">
             91<span class="ml-1 font-mono text-xs font-medium text-ink-mute">/100</span>
           </dd>
-          <p class="text-sm leading-relaxed text-ink-soft">
+          <dd class="text-sm leading-relaxed text-ink-soft">
             Run the same audit on <code class="font-mono text-ink">geoready.dev</code> and check it.
-            Free, no account — it takes about a minute.
+            Free, no account, about a minute.
             <a href="#audit-form" data-cta="home_proof_self_audit" class="font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep">Check a URL</a>
-          </p>
+          </dd>
         </div>
       </dl>
 
@@ -652,7 +697,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
         </span>
         <span aria-hidden="true" class="text-ink-mute/40">/</span>
         <span>methodology cited in</span>
-        <a href="/research/" class="font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep">AutoGEO ICLR 2026</a>
+        <a href="/research/" class="font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep">AutoGEO (arXiv:2510.11438, preprint)</a>
         <span aria-hidden="true" class="text-ink-mute/40">·</span>
         <a href="/research/" class="font-medium text-pass-deep underline decoration-pass/40 underline-offset-4 hover:decoration-pass-deep">KDD 2024</a>
         <span aria-hidden="true" class="text-ink-mute/40">·</span>
@@ -667,11 +712,11 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
         <h2 class="max-w-3xl font-head text-3xl font-extrabold tracking-[-0.02em] md:text-5xl">
           AI search is already deciding which sites get cited.
         </h2>
-        <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-pass-wash/80">Verdict · your site: pending — check it free, no account</p>
+        <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-pass-wash">Verdict · your site: pending. Check it free, no account</p>
       </div>
       <p class="mt-5 max-w-2xl leading-relaxed text-pass-wash">
-        The signals are documented, the research is published, and the audit is free —
-        it takes about a minute, no account. If you already have your score, that's where
+        The signals are documented, the research is published, and the audit is free.
+        It takes about a minute, no account. If you already have your score, that's where
         monitoring starts: a single report is a photograph; a trend is what you can act on.
       </p>
       <div class="mt-8 flex flex-wrap items-center gap-3">
@@ -690,7 +735,7 @@ const medPct = Math.max(0, Math.min(100, Number(BENCHMARK.median) || 0));
           Compare Pro &amp; Studio plans
         </a>
       </div>
-      <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-pass-wash/70">
+      <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-pass-wash">
         <a
           href="/pricing/#comparison-heading"
           data-cta="home_final_already_ran"

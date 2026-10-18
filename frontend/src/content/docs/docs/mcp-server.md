@@ -4,8 +4,6 @@ description: "Run GEO Optimizer as a Model Context Protocol server so Claude Cod
 order: 18
 ---
 
-# MCP Server
-
 GEO Optimizer exposes its core functionality as an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server, making all tools available inside AI coding assistants like Claude Code, Cursor, and Windsurf.
 
 ---
@@ -18,7 +16,7 @@ Install with the `mcp` extra:
 pip install geo-optimizer-skill[mcp]
 ```
 
-This installs the `geo-mcp` entry point alongside the `mcp` Python SDK.
+This installs the `geo-mcp` entry point alongside the `mcp` Python SDK (1.x). The MCP server requires Python 3.10 or later; on Python 3.9 the extra installs nothing.
 
 ---
 
@@ -65,7 +63,7 @@ python -m geo_optimizer.mcp.server
 
 ---
 
-## Tools (10)
+## Tools (12)
 
 ### 1. `geo_audit`
 

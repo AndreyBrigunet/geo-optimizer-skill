@@ -7,6 +7,98 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [SemVer](https://semv
 
 ## [Unreleased]
 
+### Added
+- `geo audit --url <url> --max-pages N`: find the site's sitemap and audit up to N of its pages, reporting the average score (the existing `--sitemap` batch path, without needing the sitemap URL). Optional: the default single-page score does not change. Text or JSON output only; exits 1 when no sitemap is found.
+
+### Security
+- Website dependencies: the frontend lockfile is refreshed on top of 4.19.4 and `overrides` raise `js-yaml` 3.x, `fflate`, `smol-toml`, `uuid` and `postcss-selector-parser` (#623). `npm audit` goes from 29 findings to 14; the rest are `braces` and `sprintf-js` (no patched release, build-time Sanity CLI tooling) and their parents.
+
+### Fixed (web timeouts)
+- The web audit now stops at 55 s instead of 60 s. nginx cuts the proxy at 60 s, so the engine's own graceful answer (the JSON 504 that points to the CLI, or the "Error" badge for `/badge`) always lost the race and users got nginx's HTML 504 or a broken badge image. The 504 text no longer says "more than 60 seconds".
+
+### Fixed (site contrast)
+- Colour tokens nudged to reach 4.5:1 for small text, as approved: `pass` `#0B8076` to `#0A7970`, `warn` `#9C6A06` to `#926306`, `fail` `#C93A2E` to `#C5392D`. A new `pass-light` (`#0D978C`) is used for the `exit 0` terminal labels on the dark well (3.9:1 before, 4.6:1 now), and the light text on the teal call-to-action panels is solid `pass-wash` instead of 70-90% opacity (3.2-4.2:1 before, 4.8:1 now). A colour scan of all 140 built pages (animations off) drops from 229 to 191 findings; the rest are the docs theme (fixed separately), the dimmed empty categories of the demo report and the `queued` grey on the roadmap.
+
+### Changed
+- Python 3.9 is no longer supported (end of life since October 2025): `requires-python` is now `>=3.10`, CI and the publish workflow no longer run 3.9. On Python 3.9, pip keeps installing 4.19.3. The `mcp` extra no longer needs a version marker.
+
+### Documentation
+- README FAQ: a "How do I improve my site's GEO score?" answer (audit, `geo fix` preview, re-audit, where the benchmark shows the biggest gap) with two links under their own UTM campaign (`faq-start`).
+- README: a second benchmark chart (`assets/benchmark-bands.svg`) with the share of 1,896 audited sites per score band (Foundation 57.6%, Good 28.2%, Critical 12.4%, Excellent 1.8%), from one aggregate query on the benchmark table (latest audit per domain, scheduled re-audits excluded); counts and shares only. `scripts/render_benchmark_chart.py --bands` renders it.
+- README: a short GIF of the browser audit (`assets/web-audit.gif`, a live run on geoready.dev) under the web-audit button.
+- README: a "No terminal?" web-audit button under the install command, the benchmark figures refreshed (1,800+ sites, median 59, 58% `llms.txt`, 76% JSON-LD) with a dated chart (`assets/benchmark.svg`, rendered by `scripts/render_benchmark_chart.py` from the public aggregate endpoint) and a call to action under it, and the FAQ now says Python 3.10–3.14.
+- `research/calibration-2026-10/`: the pre-registered analysis plan, an anonymised results table and the analysis output of the October 2026 calibration study (does the GEO score predict whether Perplexity cites a page; no effect detected).
+- Roadmap (`docs/ROADMAP.md` and the public roadmap page): added the shipped v4.19.3 patch.
+- `TRADEMARKS.md`: a draft name and logo policy for forks and derived products (the MIT licence covers the code, not the names). Linked from the README.
+- README: the GitHub stars badges no longer use the shields.io `github/stars` endpoint, which was returning "Unable to select next GitHub token from pool". The count badge at the top now comes from badgen.net; the call-to-action at the bottom is a static shields.io badge without a number.
+
+## [4.19.4] — 2026-10-17
+
+### Fixed
+- Web API: a URL carrying stray brackets (a badge snippet pasted with its Markdown tail, `https://site.com)](https://...`) made `/badge` and six other URL endpoints return HTTP 500 (`ValueError: Invalid IPv6 URL`). They now return 400 with the usual invalid-URL message.
+- Docs site: the Starlight favicon pointed to `src/assets/geoready-logo.svg`, which Starlight turns into the URL `/src/assets/geoready-logo.svg` (404 on every docs page). It now uses `/favicon.svg` from `public/`.
+- Site: the automatic `sitemap-index.xml` no longer lists the pages that carry `noindex` (the mock report, the report shell and the visual lab). `robots.txt` points to the hand-built `/sitemap.xml`, which was already clean.
+- Docs: every docs page now has exactly one `<h1>` (21 pages repeated the title as a body heading and the docs home hero used a third); the Perplexity crawler link in `ai-bots-reference` no longer returns 404.
+- Docs theme, light: Starlight's `--sl-color-white` token was the paper colour but is the strongest text colour in Starlight, so page titles, the sidebar group labels and the Note callout text were near-white on white (1.09:1). The token is now ink. The doc card paragraphs lost an `opacity` that pushed their code spans under 4.5:1, and the dark-theme "Get Started" button text is dark (it was white on light teal, 1.9:1).
+- Keyword-stuffing checks (`audit_negative` and the `keyword_stuffing` citability method) no longer flag a page's own brand name or the function words of its language (#607). Function-word lists now cover English, Italian, German, French, Spanish, Portuguese and Dutch, picked from `<html lang>` (every list when the attribute is missing); a declared language without a list skips the check. The brand comes from `og:site_name`, JSON-LD `Organization`/`WebSite`/`Brand` names, and a short `<title>` or `<h1>` prefix or suffix. The citability method also needs at least 5 uses of a word, and its word pattern now keeps `ü`, `ß` and other non-ASCII letters whole. Thresholds and weights are unchanged.
+
+### Security
+- Website dependencies: `npm audit fix` on `frontend/package-lock.json` (lockfile only). The production audit goes from 40 findings to 29; the rest sit behind a major `@astrojs/starlight` upgrade and are build-time tools of a static site.
+
+### Changed
+- CI also tests Python 3.10 (declared but never tested) and 3.14, and the package now carries the 3.14 classifier. No runtime change.
+
+## [4.19.3] — 2026-10-16
+
+### Changed
+- The web audit (`/api/audit` and the PDF route) now says on a 504 that the site took more than 60 seconds and that the CLI (`geo audit --url <url>`) has no such cap. Only the `detail` text changes; the status code and the 60 s limit are unchanged.
+
+### Documentation
+- `docs/json-contract.md`: state that when `error` is set, `score` and `band` are defaults and do not describe the site.
+
+### Fixed
+- The keyword stuffing check now counts words in any alphabet. It matched only Latin letters, so on Cyrillic, Greek and other non-Latin pages the word total shrank to the few Latin words and a normal brand term could be flagged as stuffing.
+
+## [4.19.2] — 2026-10-14
+
+### Added
+- Added `AuditResult.recommendations_by_category`, also emitted by `geo audit --format json` and the web API (`schema_version` stays `1`, additive field). It groups the strings of `recommendations` by the `score_breakdown` category that produced them (`robots`, `meta`, `signals`, ...), plus two non-scored keys: `blockers` (CDN/WAF block, content that needs JavaScript, critical prompt injection, critical UGC injection risk) and `other` (non-critical UGC advisory, negative signals, WebMCP, multimodal). `recommendations` is unchanged. Unreachable-site and HTTP-error results carry a single recommendation under `{"other": [...]}`; batch timeout/exception results (`core/batch_audit.py`) have both fields empty. New core helpers `build_categorized_recommendations()` and `group_recommendations_by_category()`; `build_recommendations()` keeps its signature and output. See `docs/json-contract.md`.
+
+## [4.19.1] — 2026-10-14
+
+### Security
+- The async HTTP path (used by `geo audit` when httpx is installed and by batch/sitemap audits) now connects to the IP validated by the anti-SSRF check instead of resolving the hostname again, closing a DNS-rebinding window; SNI and certificate checks still use the hostname. With an HTTP(S) proxy configured, requests sent through the proxy are resolved by the proxy, as on the sync path (#577).
+- Response size limits are enforced while the body streams, on both the sync and async paths: a live response was previously read in full before the `max_size` check, and redirect bodies are no longer read at all (#576, #577).
+- `POST /api/logs/analyze` is now rate-limited like the other POST endpoints (#580).
+- Server-rendered reports at `/report/{id}` send `X-Robots-Tag: noindex, nofollow` (#571).
+
+### Changed
+- Brand & Entity: a schema name now counts for brand-name consistency for every Organization subtype (`LocalBusiness`, `Restaurant`, `Store`, ...), not only for the literal `Organization`, and checks that read only the first `@type` of a list now consider every declared type. Sites using these shapes can score higher, and `brand_entity.primary_name` can change to the schema name (#579).
+- G-BYLINE now resolves an author declared as an `@id` reference (Yoast, RankMath) to a `Person` or `Organization` node, so those pages pass instead of reporting "No author found" (#581).
+- The web API JSON has a new optional top-level `score_penalty` (negative-signal penalty, `0` or below); `score_breakdown` still lists only rubric categories (#580).
+- `mcp` is pinned below 2.0, since mcp 2.x removed the FastMCP API the server uses; on Python 3.9, which mcp 1.x does not support, the `[mcp]` and `[all]` extras now install without it (#575).
+
+### Fixed
+- `geo audit --format rich` no longer truncates the category scores at 80 and 100 columns: the rubric v2 llms.txt label is shorter in the terminal dashboard and the bar and score columns keep a minimum width.
+- A malformed JSON-LD field (non-string `@type`, `offers` or `aggregateRating` as a string, `sameAs` as a number or object, a null `@graph`, ...) no longer makes the whole audit fail (#579).
+- The sync audit now detects a CDN-blocked `llms.txt` (403/406) and retries it, as the async path already did; the same site could differ by up to 18 points between the two paths (#569).
+- Batch and sitemap audits no longer time out healthy pages: the per-URL deadline is 60 s instead of the 10 s performance budget (#556, #570).
+- The llms.txt CDN retry no longer blocks the event loop in async and batch audits (#581).
+- Connection errors are retried at most 4 times instead of up to 16, and a server's `Retry-After` is capped at 10 s (#576).
+- Relative and protocol-relative redirect locations (`page.html`, `../x`, `//host/x`) are resolved correctly (#576).
+- Body read errors (truncated or corrupt responses) are reported as fetch errors instead of raising (#576).
+- The web report no longer shows invented failures or rubric v1 maxima on partial or gated API payloads ("Content 14/12", "No llms.txt found", "Citability 0/100"): missing data is not shown as a failed check, maxima follow the payload's rubric version, locked categories render as locked, and a missing citability score shows a dash (#578).
+
+### Documentation
+- `SKILL.md`: corrected crawler semantics (Google-Extended does not control AI Overviews; search-tier vs training bots), research claims and CLI flags (#572).
+- Site and docs: applied the 2026-10-08 SEO audit and cite AutoGEO as an arXiv preprint (arXiv:2510.11438) instead of ICLR 2026 (#573).
+- `docs/json-contract.md` documents `score_penalty`; the MCP docs state that the server requires Python 3.10+ (#575, #580).
+- Replaced the README hero GIF with a current rubric v2 terminal dashboard (`assets/tui-audit.svg`) and regenerated `assets/fix.svg`.
+- Documented `geo llms --check-drift` and `--llms-file` in `docs/llms-txt.md`.
+- Added the `howto`, `review` and `product` types to the `geo schema --type` table in `docs/schema-injector.md`.
+- Pinned the GitHub Action examples in `docs/ci-cd.md` to v4.19.0.
+- Updated the roadmap (`docs/ROADMAP.md` and the public roadmap page): release order, rubric v2 wording (9 categories), remaining planned items.
+
 ---
 
 ## [4.19.0] — 2026-10-09

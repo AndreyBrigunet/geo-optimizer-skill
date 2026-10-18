@@ -458,6 +458,20 @@ def test_badge_happy_path_restituisce_svg(client):
     assert b"<svg" in response.content
 
 
+def test_api_audit_timeout_points_to_the_cli(client):
+    """POST /api/audit that times out answers 504 and says the CLI has no 60 s cap."""
+    import asyncio
+
+    with (
+        patch("geo_optimizer.utils.validators.validate_public_url", return_value=(True, "")),
+        patch("geo_optimizer.core.audit.run_full_audit", side_effect=asyncio.TimeoutError()),
+    ):
+        response = client.post("/api/audit", json={"url": "https://timeout-example.test"})
+
+    assert response.status_code == 504
+    assert "geo audit --url" in response.json()["detail"]
+
+
 def test_badge_audit_timeout_restituisce_badge_errore(client):
     """GET /badge con audit in timeout restituisce badge SVG di errore."""
     import asyncio
@@ -491,6 +505,26 @@ def test_badge_url_privato_ritorna_400(client):
     """GET /badge con URL interno ritorna 400 (anti-SSRF)."""
     response = client.get("/badge?url=http://10.0.0.1")
     assert response.status_code == 400
+
+
+def test_badge_url_con_coda_markdown_ritorna_400(client):
+    """GET /badge con snippet Markdown incollato male ritorna 400, non 500.
+
+    urlparse solleva ValueError("Invalid IPv6 URL") sulle parentesi quadre.
+    """
+    response = client.get("/badge?url=https://site.com)](https://geoready.dev?utm_source=badge")
+    assert response.status_code == 400
+
+
+def test_audit_timeout_is_below_the_proxy_timeout():
+    """The web audit must give up before nginx's 60 s proxy_read_timeout.
+
+    At exactly 60 s nginx always answered first with its HTML 504, so the friendly
+    JSON error and the "Error" badge never reached the client.
+    """
+    from geo_optimizer.web.app import _AUDIT_TIMEOUT_S
+
+    assert _AUDIT_TIMEOUT_S < 60
 
 
 def test_badge_senza_url_ritorna_422(client):
@@ -547,6 +581,8 @@ def test_report_id_valido_con_report_in_cache_ritorna_html(client):
 
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
+    # robots.txt blocca la scansione, non l'indicizzazione di un URL linkato altrove
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
 
 
 # ─── Test: _verify_bearer_token ───────────────────────────────────────────────

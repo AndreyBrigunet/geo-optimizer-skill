@@ -83,6 +83,7 @@ geo audit --url https://yoursite.com --score-version 1
 | `--sitemap` | Yes* | XML sitemap URL to audit multiple pages in one run |
 | `--format` | No | Output format: `text` (default), `json`, `rich`, `html`, `sarif`, `junit`, `github` |
 | `--max-urls` | No | Maximum number of sitemap URLs to audit in batch mode (default: `50`) |
+| `--max-pages` | No | With `--url`: find the site's sitemap and audit up to N of its pages (2-500), reporting the average. Same as `--sitemap` without needing the sitemap URL; text or JSON output only. Fails with exit 1 if no sitemap is found. A home-only score can differ from the page average by several points (observed 2026-10-16 on 14 sites: mean gap 8.9, median 5.9) |
 | `--concurrency` | No | Concurrent page audits in batch mode (default: `5`) |
 | `--save-history` | No | Save the URL audit in local history (`~/.geo-optimizer/tracking.db`) |
 | `--regression` | No | Exit with code `1` if the score dropped vs the previous saved snapshot |
@@ -208,7 +209,7 @@ The score is the sum of all points earned across **9 categories**, capped at 100
 | Organization schema missing | Generate with `geo schema --type organization` | [Schema Injector](schema-injector.md) |
 | Meta description missing | Add `<meta name="description" content="...">` to `<head>` | — |
 | Open Graph tags missing | Add `og:title`, `og:description`, `og:image` to `<head>` | — |
-| No KG sameAs links | Add `sameAs` to Organization schema (Wikipedia, LinkedIn, etc.) | [Scoring Rubric](scoring-rubric.md#8-brand--entity-signals--max-10-pts-new-in-v3182) |
+| No KG sameAs links | Add `sameAs` to Organization schema (Wikipedia, LinkedIn, etc.) | [Scoring Rubric](scoring-rubric.md#8-brand--entity-signals--max-10-pts-v1-legacy-new-in-v3182) |
 | AI Discovery endpoints missing | Use `geo fix` to generate `.well-known/ai.txt` and `/ai/*.json` | — |
 | Low statistics count | Add specific numbers, %, dates to page content | [GEO Methods](geo-methods.md#method-2--statistics) |
 | 0 external citations | Link to authoritative sources (papers, .gov, .edu) | [GEO Methods](geo-methods.md#method-1--cite-sources) |

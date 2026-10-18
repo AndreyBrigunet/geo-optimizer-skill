@@ -12,7 +12,7 @@ Install with the `mcp` extra:
 pip install geo-optimizer-skill[mcp]
 ```
 
-This installs the `geo-mcp` entry point alongside the `mcp` Python SDK.
+This installs the `geo-mcp` entry point alongside the `mcp` Python SDK (1.x).
 
 ---
 

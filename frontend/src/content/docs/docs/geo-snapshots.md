@@ -4,8 +4,6 @@ description: "Archive full AI-answer snapshots into a local SQLite database with
 order: 13
 ---
 
-# GEO Snapshots
-
 `geo snapshots` archives complete AI answer snapshots in a local SQLite database.
 
 This feature is designed for audit trail, regression analysis, and compliance-style record keeping when you want to preserve:
@@ -106,4 +104,4 @@ The quality report assigns:
 
 - `geo snapshots` does not query AI APIs by itself
 - it acts as the local persistence layer for answer archives
-- it pairs well with [`geo monitor`](geo-monitor.md) and future active visibility checks
+- it pairs well with [`geo monitor`](/docs/geo-monitor/) and future active visibility checks
