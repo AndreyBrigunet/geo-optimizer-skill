@@ -7,19 +7,34 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [SemVer](https://semv
 
 ## [Unreleased]
 
+### Fixed (scoring)
+- Brand & Entity: a site typed directly as a LocalBusiness subtype (`RoofingContractor`, `Plumber`, `HVACBusiness`, `Electrician`, `GeneralContractor` and 21 more added to `ORGANIZATION_TYPES`) lost the contact-info point and the geographic-identity point, and got an "Add address, telephone or contactPoint" recommendation it had already met. The geo signal now accepts any Organization subtype with an address. Scores for such sites can rise by up to 2 points.
+
 ### Added
 - `geo audit --url <url> --max-pages N`: find the site's sitemap and audit up to N of its pages, reporting the average score (the existing `--sitemap` batch path, without needing the sitemap URL). Optional: the default single-page score does not change. Text or JSON output only; exits 1 when no sitemap is found.
 
 ### Security
 - Website dependencies: the frontend lockfile is refreshed on top of 4.19.4 and `overrides` raise `js-yaml` 3.x, `fflate`, `smol-toml`, `uuid` and `postcss-selector-parser` (#623). `npm audit` goes from 29 findings to 14; the rest are `braces` and `sprintf-js` (no patched release, build-time Sanity CLI tooling) and their parents.
 
-### Fixed (web timeouts)
-- The web audit now stops at 55 s instead of 60 s. nginx cuts the proxy at 60 s, so the engine's own graceful answer (the JSON 504 that points to the CLI, or the "Error" badge for `/badge`) always lost the race and users got nginx's HTML 504 or a broken badge image. The 504 text no longer says "more than 60 seconds".
+### Fixed (site consistency)
+- The audit report page said the free plan monitors one domain with a weekly drift email; it now matches the platform, where score monitoring starts on Pro (the README and the `geo audit` footers are fixed in 4.19.6).
+- The four `*-alternative` comparison pages said the free audit covers 8 categories; it is nine since 4.19.0.
+- `/state-of-geo/` renders a dated benchmark snapshot in the HTML (it loaded numbers only through client script) and no longer says llms.txt and schema are "missing more often than not" while the cohort shows 58% and 76%. One snapshot (`lib/benchmarkSnapshot.ts`, matching the README figures of 17 October 2026) now feeds `/state-of-geo/`, `/best-geo-tools/` and `/veesie-alternative/`.
+- `/best-geo-tools/` shows a single modified date and drops the legacy v1 weights figure.
+- `/best-geo-tools/` now has a dated table of named tools (Profound, RankScale, Goodie, Veesie, AEO Vision, Otterly, Semrush AI Visibility Toolkit and GeoReady) built only from facts already recorded, with sources, on the linked comparison pages (checked 16-21 September 2026); it is not a ranking and says so, and it discloses that GeoReady is the site's own product.
+- `/analyze-competitors/`: title, H1 and schema name match the queries the page answers, the worked example is labelled hypothetical and two unsourced claims are reworded.
+- `/research/`: the Jaccard and 57.8% figures of arXiv 2604.07585 are stated as the paper states them (day-to-day similarity of cited sources; ChatGPT runs with no citations; Swiss-German verticals), and two internal analyses without method or sample no longer quote a number.
+- Snippet tests started 2026-10-18 (one change per page, 28-day window): `/chatgpt-visibility-checker/` title and meta now say what it measures (it does not query ChatGPT) with an FAQ on how to check whether ChatGPT cites you; `/research/` meta names the sources and the 47 citability checks.
+- Internal links (GSC check of 22 September-19 October 2026): the homepage and `/tools/ai-citation-checker/` link once each, in running text, to `/guides/what-are-ai-citations/`, `/guides/ai-citations-check/`, `/citation-gap-analysis/` and `/rankscale-alternative/`, with the query each page ranks 8-19 for as anchor text.
+- `/rankscale-alternative/` title and meta, `/citation-gap-analysis/` title, meta and H1 match the queries they answer ("rankscale alternative", "citation gap analysis", "ai citation gap analysis").
+- `/docs/index` (404, still clicked from Google) answers 301 to `/docs/`.
+- The permanent SEO redirects (`/docs/index`, `/guides/2` to `/guides/10`, `/state-of-geo-2026`) also answer HEAD with a 301; before, only GET did and `curl -I` saw a 404.
 
 ### Fixed (site contrast)
 - Colour tokens nudged to reach 4.5:1 for small text, as approved: `pass` `#0B8076` to `#0A7970`, `warn` `#9C6A06` to `#926306`, `fail` `#C93A2E` to `#C5392D`. A new `pass-light` (`#0D978C`) is used for the `exit 0` terminal labels on the dark well (3.9:1 before, 4.6:1 now), and the light text on the teal call-to-action panels is solid `pass-wash` instead of 70-90% opacity (3.2-4.2:1 before, 4.8:1 now). A colour scan of all 140 built pages (animations off) drops from 229 to 191 findings; the rest are the docs theme (fixed separately), the dimmed empty categories of the demo report and the `queued` grey on the roadmap.
 
 ### Changed
+- MiniMax defaults to `MiniMax-M3.1-Flash`; explicit thinking settings normalize to adaptive for Flash. `MiniMax-M3` and custom/legacy model overrides keep their existing behavior across both protocols and regions.
 - Python 3.9 is no longer supported (end of life since October 2025): `requires-python` is now `>=3.10`, CI and the publish workflow no longer run 3.9. On Python 3.9, pip keeps installing 4.19.3. The `mcp` extra no longer needs a version marker.
 
 ### Documentation
@@ -31,6 +46,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [SemVer](https://semv
 - Roadmap (`docs/ROADMAP.md` and the public roadmap page): added the shipped v4.19.3 patch.
 - `TRADEMARKS.md`: a draft name and logo policy for forks and derived products (the MIT licence covers the code, not the names). Linked from the README.
 - README: the GitHub stars badges no longer use the shields.io `github/stars` endpoint, which was returning "Unable to select next GitHub token from pool". The count badge at the top now comes from badgen.net; the call-to-action at the bottom is a static shields.io badge without a number.
+
+## [4.19.6] — 2026-10-22
+
+### Fixed
+- CLI and README: the `geo audit` footer (text and rich output) and the README said the free plan monitors one domain with a weekly drift email. Since 2026-10-20 the free plan saves reports and runs one real AI answer check a week, and weekly score monitoring starts on Pro; the wording now says so.
+
+## [4.19.5] — 2026-10-18
+
+### Fixed
+- Web API: the web audit now stops at 55 s instead of 60 s. nginx cuts the proxy at 60 s, so the engine's own graceful answer (the JSON 504 that points to the CLI, or the "Error" badge for `/badge`) always lost the race and users got nginx's HTML 504 or a broken badge image. The 504 text no longer says "more than 60 seconds".
 
 ## [4.19.4] — 2026-10-17
 

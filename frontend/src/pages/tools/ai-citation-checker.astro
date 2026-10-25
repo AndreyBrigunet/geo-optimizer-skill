@@ -48,7 +48,7 @@ const faqs = [
   {
     question: 'Is this check really free?',
     answer:
-      'Yes. Each check asks the AI engine two questions at our expense, so there is a fair-use limit per visitor and per day. Pro ($19/month) adds domain monitoring, score history, and regression alerts. Scheduled AI citation tracking — running these checks automatically and alerting you on wins or losses — is on Studio ($49/month).',
+      'Yes. Each check asks the AI engine two questions at our expense, so there is a fair-use limit per visitor and per day. Pro ($19/month) adds domain monitoring, score history, and regression alerts. Scheduled AI citation tracking — running these checks automatically and alerting you on wins or losses — is on Agency ($89/month founding, then $199/month).',
   },
 ];
 ---
@@ -145,9 +145,12 @@ const faqs = [
           <p class="mt-5 max-w-3xl text-sm leading-relaxed text-ink-soft">
             This check is a one-off, Perplexity-only snapshot —
             {' '}<a href="/chatgpt-citation-tracker/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">need recurring tracking instead?</a>
+            {' '}If you are weighing paid trackers, the
+            {' '}<a href="/rankscale-alternative/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">RankScale alternative</a>
+            {' '}page compares one of them with GeoReady.
             {' '}And if a competitor keeps showing up in the sources instead of you, the
-            {' '}<a href="/citation-gap-analysis/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">citation gap analysis workflow</a>
-            {' '}covers the wider diagnosis.
+            {' '}<a href="/citation-gap-analysis/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">citation gap analysis</a>
+            {' '}workflow covers the wider diagnosis.
           </p>
         </section>
 
@@ -235,6 +238,8 @@ const faqs = [
         <section class="mt-12 max-w-3xl md:mt-16">
           <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">How to improve your AI citations</h2>
           <p class="mt-4 leading-relaxed text-ink-soft">
+            If the term is new, start with
+            {' '}<a href="/guides/what-are-ai-citations/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">what are AI citations</a>.
             Citations are earned with technical and content signals that AI
             retrieval rewards: open access for AI crawlers, structured data,
             an <a href="/tools/llms-txt-generator/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">llms.txt</a>,
@@ -243,8 +248,8 @@ const faqs = [
             covers the full playbook, and the
             {' '}<a href="/ai-seo-audit/" data-cta="citation_checker_content_ai_seo_audit" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">free GEO audit</a>{' '}
             scores your site on 100 points across nine categories. For the background
-            method behind this tool, see our step-by-step guide on
-            {' '}<a href="/guides/ai-citations-check/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">how to tell if ChatGPT is citing your brand</a>.
+            method behind this tool, see the step-by-step guide that answers
+            {' '}<a href="/guides/ai-citations-check/" class="text-pass-deep underline decoration-rail underline-offset-4 hover:decoration-pass-deep">how do I know if my content is cited in ChatGPT answers?</a>{' '}
             Run the audit, fix the priority items, then come back and re-check your
             citations.
           </p>
@@ -276,7 +281,7 @@ const faqs = [
                   <th scope="row" class="border-b border-rail px-4 py-3 font-semibold text-ink">Strong</th>
                   <td class="border-b border-rail px-4 py-3 text-ink-soft">You can lose citations without noticing.</td>
                   <td class="border-b border-rail px-4 py-3 text-ink-soft">Track the same prompts weekly.</td>
-                  <td class="border-b border-rail px-4 py-3 text-ink-soft">Studio citation snapshots and alerts.</td>
+                  <td class="border-b border-rail px-4 py-3 text-ink-soft">Agency citation snapshots and alerts.</td>
                 </tr>
                 <tr>
                   <th scope="row" class="border-b border-rail px-4 py-3 font-semibold text-ink">Cited</th>
@@ -337,11 +342,11 @@ const faqs = [
         </p>
         <div class="mt-6 flex flex-wrap gap-3">
           <a
-            href="https://app.geoready.dev/signup?plan=studio&intent=citations&utm_source=ai_citation_checker_page&utm_medium=content_cta&utm_campaign=tool_to_paid"
-            data-plan-id="studio"
-            data-plan-name="Studio"
+            href="https://app.geoready.dev/signup?plan=agency&intent=citations&utm_source=ai_citation_checker_page&utm_medium=content_cta&utm_campaign=tool_to_paid"
+            data-plan-id="agency"
+            data-plan-name="Agency"
             data-plan-period="monthly"
-            data-plan-price="$49"
+            data-plan-price="$89"
             data-plan-currency="USD"
             data-cta-location="citation_checker_final_tracking"
             class="inline-flex items-center justify-center rounded-[4px] bg-white px-6 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-pass-deep transition-colors hover:bg-pass-wash"

@@ -19,9 +19,9 @@ const FREE_SLUGS = new Set(['robots', 'meta', 'signals']);
 const ALL_LOCKED_SLUGS = ['llms', 'schema', 'content', 'ai_discovery', 'brand_entity'];
 
 type RecommendedPlan = {
-  id: 'pro' | 'studio';
-  name: 'Pro' | 'Studio';
-  price: '$19' | '$49';
+  id: 'pro' | 'agency';
+  name: 'Pro' | 'Agency';
+  price: '$19' | '$89';
   cta: string;
   headline: string;
   reason: string;
@@ -35,7 +35,7 @@ const planByCategory: Record<string, RecommendedPlan> = {
     price: '$19',
     cta: 'Start Pro monitoring',
     headline: 'Start with Pro to keep technical GEO signals from regressing.',
-    reason: 'This looks like a technical visibility problem. Pro is the right first upgrade when you need weekly checks, score history, PDF export, and regression alerts for one domain.',
+    reason: 'This looks like a technical visibility problem. Pro is the right first upgrade when you need weekly checks, score history, PDF export, and regression alerts for up to 10 domains.',
     intent: 'technical_monitoring',
   },
   llms: {
@@ -62,7 +62,7 @@ const planByCategory: Record<string, RecommendedPlan> = {
     price: '$19',
     cta: 'Start Pro monitoring',
     headline: 'Start with Pro to keep metadata and canonical signals stable.',
-    reason: 'Metadata issues affect both classic SEO and AI answer extraction. Pro is enough when the main job is catching technical drift on one domain.',
+    reason: 'Metadata issues affect both classic SEO and AI answer extraction. Pro is enough when the main job is catching technical drift on up to 10 domains.',
     intent: 'metadata_monitoring',
   },
   signals: {
@@ -75,30 +75,30 @@ const planByCategory: Record<string, RecommendedPlan> = {
     intent: 'freshness_monitoring',
   },
   content: {
-    id: 'studio',
-    name: 'Studio',
-    price: '$49',
-    cta: 'Start Studio tracking',
-    headline: 'Use Studio when the gap is citation quality, not just crawlability.',
-    reason: 'Content gaps need more than a weekly technical score. Studio adds AI citation tracking, competitor comparison, and client-ready exports so you can see whether answer engines actually mention and cite you.',
+    id: 'agency',
+    name: 'Agency',
+    price: '$89',
+    cta: 'Start Agency tracking',
+    headline: 'Use Agency when the gap is citation quality, not just crawlability.',
+    reason: 'Content gaps need more than a weekly technical score. Agency adds AI citation tracking, competitor comparison, and client-ready exports so you can see whether answer engines actually mention and cite you.',
     intent: 'citation_tracking',
   },
   ai_discovery: {
-    id: 'studio',
-    name: 'Studio',
-    price: '$49',
-    cta: 'Start Studio tracking',
-    headline: 'Use Studio to track whether AI engines discover and cite the site.',
-    reason: 'Discovery issues sit between technical access and answer-engine presence. Studio is the better fit when you need citation checks and competitor context, not only monitoring.',
+    id: 'agency',
+    name: 'Agency',
+    price: '$89',
+    cta: 'Start Agency tracking',
+    headline: 'Use Agency to track whether AI engines discover and cite the site.',
+    reason: 'Discovery issues sit between technical access and answer-engine presence. Agency is the better fit when you need citation checks and competitor context, not only monitoring.',
     intent: 'ai_discovery_tracking',
   },
   brand_entity: {
-    id: 'studio',
-    name: 'Studio',
-    price: '$49',
-    cta: 'Start Studio tracking',
-    headline: 'Use Studio when entity authority is the blocker.',
-    reason: 'Brand and entity gaps show up in whether answer engines mention you against competitors. Studio adds citation tracking and comparison workflows for that job.',
+    id: 'agency',
+    name: 'Agency',
+    price: '$89',
+    cta: 'Start Agency tracking',
+    headline: 'Use Agency when entity authority is the blocker.',
+    reason: 'Brand and entity gaps show up in whether answer engines mention you against competitors. Agency adds citation tracking and comparison workflows for that job.',
     intent: 'entity_citation_tracking',
   },
 };
@@ -299,8 +299,8 @@ function ReportNextStep({
             </p>
             <p className="mt-0.5 text-sm leading-relaxed text-ink-soft">
               {isRepeat
-                ? 'You are re-checking this site by hand. The free plan runs the same audit weekly for one domain, emails you when the score drifts, and keeps the last 5 audits.'
-                : 'A free account saves this report, re-runs the audit weekly for one domain and keeps the last 5 audits, so you can see whether the fixes moved the score.'}
+                ? 'You are re-checking this site by hand. A free account keeps your last 5 audits and runs one real AI answer check a week. Weekly re-audits and drift alerts start on Pro.'
+                : 'A free account saves this report, keeps your last 5 audits and runs one real AI answer check a week, so you can see how AI engines talk about the site. Weekly re-audits start on Pro.'}
             </p>
           </div>
           <a
@@ -528,6 +528,9 @@ export default function AuditReportContainer({ reportId }: AuditReportContainerP
           <div className="rounded-[4px] border border-rail bg-white p-4">
             <h3 className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Export Report</h3>
             <ExportActions reportUrl={report.url} />
+            <p className="mt-3 text-xs text-ink-soft leading-relaxed">
+              Auditing a prospect&apos;s site? The PDF works as a leave-behind for your pitch.
+            </p>
           </div>
 
           <ScoreHistory url={report.url} currentScore={report.geoScore} />
@@ -586,7 +589,7 @@ export default function AuditReportContainer({ reportId }: AuditReportContainerP
         <div className="mt-6 flex flex-col items-start gap-4 rounded-[4px] border border-pass/50 bg-pass-wash/60 p-5 sm:flex-row sm:items-center">
           <div className="flex-1">
             <p className="mb-0.5 text-sm font-semibold text-ink">Save this report to your dashboard</p>
-            <p className="text-xs text-ink-soft">Create a free account to track this domain over time. Report link expires in 24h.</p>
+            <p className="text-xs text-ink-soft">Create a free account to save this report and see how AI engines answer about this site. Report link expires in 24h.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 shrink-0">
             <a

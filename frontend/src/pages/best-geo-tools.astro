@@ -1,29 +1,16 @@
 ---
 import Shell from '../components/Shell.astro';
 import ArticleVisual from '../components/ArticleVisual.astro';
+import { BENCHMARK } from '../lib/benchmarkSnapshot';
 
 const title = 'Best GEO Tools 2026: Compare AI Visibility Software';
 const description =
   'Compare GEO and AI visibility tools by audit depth, monitoring, llms.txt support, schema, workflows, and pricing fit. Includes GEO Optimizer.';
 const canonical = 'https://geoready.dev/best-geo-tools/';
 const datePublished = '2026-06-16';
-const dateModified = '2026-10-14';
+const dateModified = '2026-10-23';
+const dateModifiedLabel = 'October 23, 2026';
 
-// Aggregati della coorte GeoReady, letti da GET /api/public/benchmark.
-// Sono hardcoded di proposito: la build Docker gira prima che l'app sia in piedi,
-// quindi un fetch nel frontmatter fallirebbe, e i numeri caricati via JS (come fa
-// state-of-geo.astro) non entrano nell'HTML che un crawler AI legge senza eseguire
-// script. Il prezzo è che invecchiano: `measuredOn` rende la stagionatura visibile
-// al lettore invece di lasciarla implicita. Riallineare all'endpoint quando cambia.
-const BENCHMARK = {
-  measuredOn: '21 September 2026',
-  sampleLabel: '1200+ audited sites',
-  average: '55.1',
-  median: '57',
-  llmsTxtAdoption: '58%',
-  schemaAdoption: '75%',
-  biggestGap: 'AI discovery files',
-} as const;
 
 // Criteri di valutazione di un GEO tool — riusati nella tabella visibile.
 // Ogni criterio è una domanda concreta che un reviewer tecnico può verificare.
@@ -56,6 +43,69 @@ const EVALUATION_CRITERIA = [
     'Pricing model',
     'Free and open, freemium, or paid-only? The model determines how much you can verify before committing budget.',
   ],
+] as const;
+
+// Strumenti nominati — solo fatti già registrati, con fonte e data, nelle pagine
+// "alternative" collegate (controllate il 16-21 settembre 2026). Nessuna classifica,
+// nessun punteggio: se una cella non è nella pagina collegata, rimanda alla pagina.
+const NAMED_TOOLS_CHECKED = '16 September to 23 October 2026 (vendor pricing pages re-read on 23 October; Semrush dollar prices are from 1 September because Semrush shows euros from Europe)';
+const NAMED_TOOLS = [
+  {
+    name: 'Profound',
+    href: '/profound-alternative/',
+    free: 'A 7-day free trial; no ongoing free tier',
+    entry: 'No public self-serve price: trial, then a custom Enterprise plan',
+    weights: 'Not published on the pages checked',
+  },
+  {
+    name: 'RankScale',
+    href: '/rankscale-alternative/',
+    free: 'No ongoing free plan; a 7-day free trial of Pro',
+    entry: 'Essentials, yearly only ($204/year in the page\'s structured data); Pro $99/mo: 1,200 credits',
+    weights: '7 core metrics described; exact weighted formula not published',
+  },
+  {
+    name: 'Goodie',
+    href: '/goodie-alternative/',
+    free: 'A 7-day free trial of Core; no ongoing free plan',
+    entry: 'Core $295/mo billed annually',
+    weights: 'Metric types described; see the comparison page',
+  },
+  {
+    name: 'Veesie',
+    href: '/veesie-alternative/',
+    free: '7-day trial, 15 prompts, no card',
+    entry: 'Starter €24/mo billed annually: 1 site, 20 prompts, 3 engines',
+    weights: '"GEO Score" weights published: mention rate 50, sentiment 25, source coverage 15, position 10',
+  },
+  {
+    name: 'AEO Vision',
+    href: '/aeovision-alternative/',
+    free: 'No free paid plan; free tools such as an llms.txt generator',
+    entry: 'Lite $9/mo: 30 prompts on ChatGPT, 1 brand',
+    weights: 'Factors described, exact weights not published',
+  },
+  {
+    name: 'Otterly',
+    href: '/otterly-alternative/',
+    free: 'A free trial (length not stated on the pricing page)',
+    entry: 'See the comparison page',
+    weights: 'See the comparison page',
+  },
+  {
+    name: 'Semrush AI Visibility Toolkit',
+    href: '/semrush-ai-visibility-toolkit-alternative/',
+    free: 'Free plan includes some AI Visibility features; scope not disclosed',
+    entry: 'See the comparison page',
+    weights: 'See the comparison page',
+  },
+  {
+    name: 'GeoReady (this site)',
+    href: '/methodology/',
+    free: '$0, 5 audits/day, full nine-category report, no account, no card',
+    entry: 'Pro $19/mo founding price, then $29/mo: 10 domains, weekly monitoring',
+    weights: 'Nine categories and weights published, MIT-licensed',
+  },
 ] as const;
 
 // Categorie di tool sul mercato — descritte senza inventare nomi o feature di vendor.
@@ -123,8 +173,8 @@ const GEO_OPTIMIZER_FEATURES = [
   ['Audit', 'Scores a site 0–100 across nine categories using 47 citability checks, 9 of them taken from the KDD 2024 GEO paper.'],
   ['CI/CD', 'Ships a GitHub Action that runs a full audit in a pipeline and can fail a build below a minimum score.'],
   ['Answer-engine querying', 'The geo citations command asks real answer engines whether your brand is mentioned and your domain is cited (bring your own API key).'],
-  ['Hosted citation monitoring', 'The GeoReady hosted layer tracks citations over time: Studio+ runs 5 automated Perplexity checks a day with manual ChatGPT/Google capture on Agency. One-off checks are free; saving history and monitoring are paid.'],
-  ['Research basis', 'Methods grounded in Princeton KDD 2024 and AutoGEO (arXiv:2510.11438, preprint).'],
+  ['Hosted citation monitoring', 'The GeoReady hosted layer tracks AI answers over time: a free account gets 1 automated Perplexity answer check a week, and Agency adds AI answer snapshots (Perplexity automated, ChatGPT/Google by manual paste). One-off checks are free; saving history and monitoring are paid.'],
+  ['Research basis', '9 of the 47 content checks come from the methods tested in the KDD 2024 GEO paper (arXiv:2311.09735). The scoring weights are a considered starting point, published so you can disagree with a specific number.'],
 ] as const;
 
 // FAQ condivise tra markup visibile e JSON-LD (single source of truth).
@@ -193,7 +243,7 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
       </p>
 
       <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">
-        Published June 16, 2026 · Last updated June 17, 2026 · 8 min read
+        Published June 16, 2026 · Last updated {dateModifiedLabel} · 8 min read
       </p>
     </header>
 
@@ -318,12 +368,6 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
       </p>
     </section>
 
-    <ArticleVisual
-      src="/images/article-visuals/N1HeroScoringWeights.png"
-      alt="Diagram of the legacy v1 GEO scoring weights (eight categories) that turn an audit score into a checklist."
-      caption="Legacy v1 weights shown. The current default, rubric v2, has nine categories; see the methodology page for the current weights."
-      height={452}
-    />
 
     {/* Tool categories */}
     <section class="mb-12 md:mb-16">
@@ -349,12 +393,12 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
       </p>
     </section>
 
-    {/* Category comparison matrix — category-level only, no vendor claims */}
+    {/* Category comparison matrix — category level; named tools follow in the next section */}
     <section class="mb-12 md:mb-16">
       <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">GEO tools compared, by category</h2>
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
         This matrix compares the categories, not individual products, so it stays
-        true as vendors come and go. Use it to decide which kind of tool fits your
+        true as vendors come and go; named tools follow below. Use it to decide which kind of tool fits your
         question, then verify any specific product against the criteria above before
         you buy. "Varies" means the answer depends on the vendor and is worth
         checking yourself.
@@ -390,6 +434,39 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
         are different questions. The pattern that holds across all of them: the tool
         whose methodology you can read is the one you can trust the result from.
       </p>
+    </section>
+
+    {/* Named tools — facts as recorded on each comparison page, dated, not ranked */}
+    <section class="mb-12 md:mb-16">
+      <h2 class="font-head text-2xl font-extrabold tracking-[-0.02em] text-ink md:text-3xl">Named tools, as recorded on our comparison pages</h2>
+      <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
+        Each row repeats facts from the linked comparison page, which cites the vendor's
+        own pages and was checked between {NAMED_TOOLS_CHECKED}. The table is not a
+        ranking and prices change, so confirm on the vendor's site before you buy. We
+        build GeoReady, so read its row with that in mind.
+      </p>
+      <div class="mt-6 overflow-x-auto rounded-[4px] border border-rail bg-white">
+        <table class="w-full min-w-[760px] text-left text-sm">
+          <thead class="bg-paper">
+            <tr class="border-b border-rail">
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Tool</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Free option</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Entry paid tier</th>
+              <th scope="col" class="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Scoring weights</th>
+            </tr>
+          </thead>
+          <tbody>
+            {NAMED_TOOLS.map((row) => (
+              <tr class="border-b border-rail/60 align-top last:border-0">
+                <th scope="row" class="px-4 py-3 font-semibold text-ink"><a href={row.href} class="underline decoration-rail underline-offset-4 hover:decoration-ink">{row.name}</a></th>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{row.free}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{row.entry}</td>
+                <td class="px-4 py-3 leading-relaxed text-ink-soft">{row.weights}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <ArticleVisual
@@ -433,9 +510,9 @@ const PROSE_LINK = 'text-pass-deep underline decoration-rail underline-offset-4 
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-soft">
         Against the criteria: the methodology is transparent because the nine scoring
         categories and their weights are published; it is open-source under MIT; it
-        does both auditing and citation monitoring — automated Perplexity checks on
-        Studio+ and manual ChatGPT/Google capture on Agency — and it runs in CI/CD
-        via a GitHub Action; and its methods are grounded in published research.
+        does both auditing and citation monitoring — automated Perplexity checks and
+        manual ChatGPT/Google capture on Agency — and it runs in CI/CD
+        via a GitHub Action; and 9 of its 47 content checks come from the methods tested in the KDD 2024 GEO paper.
         The hosted layer is freemium — the
         {' '}
         <a href="/ai-seo-audit/" data-cta="best_geo_tools_body_ai_seo_audit" class={PROSE_LINK}>audit</a>,

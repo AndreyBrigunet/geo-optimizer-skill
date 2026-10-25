@@ -179,8 +179,8 @@ Guides for most commands live in [`docs/`](docs/). Provider setup for `geo citat
 
 The hosted platform runs the same engine on a schedule, so the watching happens without you:
 
-- **Free plan** — one monitored domain, weekly drift email, score history, and AI citation tracking.
-- **Pro / Studio / Agency, from $19/mo** — multi-site portfolios, regression alerts, client reporting. [Pricing](https://geoready.dev/pricing/?utm_source=github&utm_medium=readme&utm_campaign=bridge).
+- **Free plan** — audits, your last 5 reports, and one real AI answer check a week (Perplexity).
+- **Pro / Studio / Agency, from $19/mo** — weekly score monitoring, regression alerts, multi-site portfolios, client reporting. [Pricing](https://geoready.dev/pricing/?utm_source=github&utm_medium=readme&utm_campaign=bridge).
 
 [**Create a free account**](https://app.geoready.dev/signup/?utm_source=github&utm_medium=readme&utm_campaign=bridge) · [Free web audit, no account](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=bridge) · [Get the free 160-page GEO Readiness Manual](https://geoready.dev/geo-readiness-manual/?utm_source=github&utm_medium=readme&utm_campaign=bridge)
 
@@ -279,7 +279,7 @@ Treat AI visibility like test coverage. The GitHub Action scores your site, fail
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.19.4
+- uses: Auriti-Labs/geo-optimizer-skill@v4.19.6
   with:
     url: https://yoursite.com
     min-score: 70        # fail the build below 70
@@ -458,7 +458,7 @@ Yes. *AI Search Engineering: A Technical Guide to Generative Engine Optimization
 
 ## Roadmap
 
-Focused release waves, not noisy patches: 90 releases since February 2026, currently **v4.19.4**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
+Focused release waves, not noisy patches: 92 releases since February 2026, currently **v4.19.6**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 

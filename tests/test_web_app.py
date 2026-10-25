@@ -832,6 +832,8 @@ def test_redirect_seo_non_intercetta_altri_path(client):
         ("/guides/2/", "/guides/"),
         ("/guides/10", "/guides/"),
         ("/guides/10/", "/guides/"),
+        ("/docs/index", "/docs/"),
+        ("/docs/index/", "/docs/"),
     ],
 )
 def test_redirect_301_seo_paginazione_e_state_of_geo(client, source, target):
@@ -841,7 +843,10 @@ def test_redirect_301_seo_paginazione_e_state_of_geo(client, source, target):
     trattano come soft-404; /guides/2..10 sono doorway sottili rimosse. Entrambi
     consolidano con una vera 301 verso la pagina corretta.
     """
-    response = client.get(source, follow_redirects=False)
+    for method in (client.get, client.head):
+        response = method(source, follow_redirects=False)
 
-    assert response.status_code == 301, f"{source} deve rispondere 301, non {response.status_code}"
-    assert response.headers["location"] == target
+        assert response.status_code == 301, (
+            f"{method.__name__.upper()} {source} deve rispondere 301, non {response.status_code}"
+        )
+        assert response.headers["location"] == target

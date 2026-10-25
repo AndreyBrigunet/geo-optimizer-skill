@@ -198,13 +198,13 @@ export const roadmapPhases: RoadmapPhase[] = [
         id: 'visual-dashboard',
         title: 'Visual dashboard',
         description: 'More comprehensive dashboard with radar charts and category breakdowns.',
-        status: 'planned',
+        status: 'in-progress',
       },
       {
         id: 'trend-tracking-ui',
         title: 'Trend tracking & score history',
         description: 'Visual score history and trend graphs directly in the web UI.',
-        status: 'planned',
+        status: 'available',
       },
       {
         id: 'competitor-reports',
@@ -216,13 +216,13 @@ export const roadmapPhases: RoadmapPhase[] = [
         id: 'scheduled-monitoring-web',
         title: 'Scheduled monitoring in web app',
         description: 'Configure and view scheduled audits without using the CLI.',
-        status: 'planned',
+        status: 'available',
       },
       {
         id: 'batch-audit',
         title: 'Multi-site batch audit',
         description: 'CSV upload, batch processing, and consolidated export.',
-        status: 'planned',
+        status: 'in-progress',
       },
       {
         id: 'wordpress-plugin-roadmap',
@@ -289,8 +289,8 @@ export const roadmapPhases: RoadmapPhase[] = [
       {
         id: 'team-workspace',
         title: 'Local / hosted workspace for teams',
-        description: 'Multi-user team accounts with shared projects and permissions.',
-        status: 'exploring',
+        description: 'Multi-user team accounts with shared projects and permissions. Deployed with limited access; not generally available yet.',
+        status: 'in-progress',
       },
       {
         id: 'v5-architecture',
@@ -324,5 +324,8 @@ export const releaseCadence = [
   { version: 'v4.19.1', name: 'Google AI readiness (patch)', status: 'available' as RoadmapStatus },
   { version: 'v4.19.2', name: 'Recommendations by category (patch)', status: 'available' as RoadmapStatus },
   { version: 'v4.19.3', name: 'Non-Latin keyword stuffing fix (patch)', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.4', name: 'Keyword stuffing false positives and URL 400 (patch)', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.5', name: 'Web audit timeout margin (patch)', status: 'available' as RoadmapStatus },
+  { version: 'v4.19.6', name: 'Free plan wording fix (patch)', status: 'available' as RoadmapStatus },
   { version: 'v5.0.0', name: 'Black Archive', status: 'exploring' as RoadmapStatus },
 ];

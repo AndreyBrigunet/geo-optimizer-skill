@@ -2494,6 +2494,8 @@ _SEO_REDIRECTS = {
     "/guides/8": "/guides/",
     "/guides/9": "/guides/",
     "/guides/10": "/guides/",
+    # Vecchio URL della home docs, ancora con click e impression in GSC.
+    "/docs/index": "/docs/",
 }
 
 
@@ -2507,8 +2509,9 @@ def _register_seo_redirects() -> None:
             return permanent_redirect
 
         handler = make_handler(target)
-        app.get(source, include_in_schema=False)(handler)
-        app.get(source + "/", include_in_schema=False)(handler)
+        # HEAD too: link checkers and `curl -I` would otherwise fall through to the static mount and see a 404.
+        for path in (source, source + "/"):
+            app.api_route(path, methods=["GET", "HEAD"], include_in_schema=False)(handler)
 
 
 _register_seo_redirects()

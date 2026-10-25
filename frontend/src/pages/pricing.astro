@@ -19,6 +19,7 @@ const selfServePlans = [
     cadence: 'run: on demand · 5/day',
     features: [
       '5 audits per day',
+      '1 AI answer check per week with a free account (Perplexity)',
       'GEO score 0-100',
       'Full 9-category GEO report',
       'Actionable recommendations',
@@ -30,46 +31,21 @@ const selfServePlans = [
     name: 'Pro',
     price: '$19',
     period: '/month',
-    status: 'Founding price',
+    status: 'Founding price, then $29/month',
     statusStyle: 'bg-pass-wash text-pass-deep',
-    description: 'Weekly monitoring for one domain, score history, regression alerts, PDF export, and API access. For developers and consultants managing one site.',
+    description: 'Weekly monitoring for up to 10 domains, score history, regression alerts, PDF export, and API access. For developers and consultants managing a few sites.',
     cta: 'Start with Pro',
     ctaHref: 'https://app.geoready.dev/signup?plan=pro&intent=monitoring&onboarding=first_domain&utm_source=pricing&utm_medium=plan_card&utm_campaign=pricing_to_paid&utm_content=pro_card',
     ctaStyle: 'bg-pass-deep text-white hover:bg-pass',
     recommended: true,
-    cadence: 'schedule: weekly · 1 domain',
+    cadence: 'schedule: weekly · 10 domains',
     features: [
       'Unlimited audits',
-      '1 domain, weekly monitoring',
+      '10 domains, weekly monitoring',
       '30-audit score history',
       'Regression alerts by email (when your score drops by 5 points or more)',
       'PDF export',
       'API access (Bearer token)',
-    ],
-  },
-  {
-    id: 'studio',
-    name: 'Studio',
-    price: '$49',
-    period: '/month',
-    status: 'Founding price',
-    statusStyle: 'bg-pass-wash text-pass-deep',
-    description: 'AI citation tracking, multi-site daily monitoring, unbranded PDF exports, and competitor comparison. For consultants and agencies managing a portfolio.',
-    cta: 'Start with Studio',
-    ctaHref: 'https://app.geoready.dev/signup?plan=studio&intent=citations&onboarding=first_domain&utm_source=pricing&utm_medium=plan_card&utm_campaign=pricing_to_paid&utm_content=studio_card',
-    ctaStyle: 'border border-rail bg-white text-ink hover:bg-pass-wash',
-    recommended: false,
-    cadence: 'schedule: daily · 15 domains',
-    features: [
-      'Everything in Pro',
-      'AI citation tracking: 5 automated checks/day (Perplexity)',
-      '15 domains, daily monitoring',
-      '12-month score history',
-      'Unbranded PDF export (removes GeoReady footer and badge)',
-      'Custom-logo white-label: roadmap',
-      'Competitor comparison',
-      'Batch audit: 50 URLs',
-      'Priority support',
     ],
   },
 ];
@@ -80,15 +56,17 @@ const scalePlans = [
     name: 'Agency',
     price: '$89',
     period: '/month',
-    status: 'Founding price',
+    status: 'Founding price, then $199/month',
     statusStyle: 'bg-pass-wash text-pass-deep',
     description: 'Team workspace, 50-domain daily portfolio monitoring, AI answer snapshots, and unlimited batch audits.',
     cta: 'Start with Agency',
     ctaHref: 'https://app.geoready.dev/signup?plan=agency&intent=portfolio&onboarding=first_domain&utm_source=pricing&utm_medium=plan_card&utm_campaign=pricing_to_paid&utm_content=agency_card',
     cadence: 'schedule: daily · 50 domains',
     features: [
-      'Everything in Studio',
+      'Everything in Pro',
       '50 domains, daily monitoring',
+      'Unbranded PDF export (removes GeoReady footer and badge)',
+      'Competitor comparison',
       '24-month score history',
       'Team workspace (owner / editor / viewer)',
       'Unlimited batch audits',
@@ -107,7 +85,7 @@ const scalePlans = [
     // No sales team today — honest label + direct email to the maintainer
     // (address already public on the privacy policy page).
     cta: 'Contact us',
-    ctaHref: 'mailto:juancamilo.auriti@gmail.com?subject=GeoReady%20Enterprise',
+    ctaHref: 'mailto:info@geoready.dev?subject=GeoReady%20Enterprise',
     cadence: 'schedule: hourly · unlimited',
     features: [
       'Everything in Agency',
@@ -138,25 +116,13 @@ const planChoiceRows = [
   {
     intent: 'I need to know when my site gets worse or better.',
     plan: 'Pro',
-    reason: 'Choose Pro when one domain needs weekly monitoring, score history, regression alerts, PDF export, and API access.',
+    reason: 'Choose Pro when your domains need weekly monitoring, score history, regression alerts, PDF export, and API access.',
     href: 'https://app.geoready.dev/signup?plan=pro&intent=monitoring&onboarding=first_domain&utm_source=pricing&utm_medium=plan_choice&utm_campaign=pricing_to_paid&utm_content=pro_choice',
     cta: 'Start Pro',
     tracking: 'pricing_choice_pro_monitoring',
     planId: 'pro',
     planName: 'Pro',
     price: '$19',
-    period: 'monthly',
-  },
-  {
-    intent: 'I need AI citation tracking or client-ready reports.',
-    plan: 'Studio',
-    reason: 'Choose Studio when AI citations, competitor comparison, unbranded exports, or several monitored domains matter.',
-    href: 'https://app.geoready.dev/signup?plan=studio&intent=citations&onboarding=first_domain&utm_source=pricing&utm_medium=plan_choice&utm_campaign=pricing_to_paid&utm_content=studio_choice',
-    cta: 'Start Studio',
-    tracking: 'pricing_choice_studio_citations',
-    planId: 'studio',
-    planName: 'Studio',
-    price: '$49',
     period: 'monthly',
   },
   {
@@ -192,7 +158,7 @@ const afterCheckoutSteps = [
   {
     step: '04',
     title: 'Monitoring starts from there',
-    desc: 'Pro runs weekly for one domain. Studio and Agency move to daily multi-site monitoring with longer history and client workflows.',
+    desc: 'Pro runs weekly for up to 10 domains. Agency moves to daily multi-site monitoring with longer history and client workflows.',
   },
 ] as const;
 
@@ -204,22 +170,22 @@ const trustAssurances = [
 ] as const;
 
 // '✓' renders as a drawn SVG check; '—' stays typographic.
-const comparisonRows: [string, string, string, string, string][] = [
-  ['GEO score (0-100)',      '✓',       '✓',        '✓',        '✓'],
-  ['Full 9-category report', '✓',       '✓',        '✓',        '✓'],
-  ['Audits per day',         '5',       '∞',        '∞',        '∞'],
-  ['Domain monitoring',      '—',       '1 / week', '15 / day', '50 / day'],
-  ['Score history',          '—',       '30 audits','12 months','24 months'],
-  ['Regression alerts',      '—',       '✓',        '✓',        '✓'],
-  ['PDF export',             '—',       '✓',        '✓',        '✓'],
-  ['Unbranded PDF export',   '—',       '—',        '✓',        '✓'],
-  ['Custom-logo white-label','—',       '—',        'roadmap',  'roadmap'],
-  ['Competitor comparison',  '—',       '—',        '✓',        '✓'],
-  ['Bulk audit',             '—',       '—',        '50 URLs',  '∞'],
-  ['Team workspace',         '—',       '—',        '—',        '✓'],
-  ['AI search snapshots',    '—',       '—',        '5 runs/day', '✓'],
-  ['API access',             '—',       '✓',        '✓',        '✓'],
-  ['CLI (MIT)',               '✓',       '✓',        '✓',        '✓'],
+const comparisonRows: [string, string, string, string][] = [
+  ['GEO score (0-100)', '✓', '✓', '✓'],
+  ['Full 9-category report', '✓', '✓', '✓'],
+  ['Audits per day', '5', '∞', '∞'],
+  ['Domain monitoring', '—', '10, weekly', '50, daily'],
+  ['Score history', '—', '30 audits', '24 months'],
+  ['Regression alerts', '—', '✓', '✓'],
+  ['PDF export', '—', '✓', '✓'],
+  ['Unbranded PDF export', '—', '—', '✓'],
+  ['Custom-logo white-label', '—', '—', 'roadmap'],
+  ['Competitor comparison', '—', '—', '✓'],
+  ['Bulk audit', '—', '—', '∞'],
+  ['Team workspace', '—', '—', '✓'],
+  ['Automated AI answer checks (Perplexity)', '1 / week, with an account', '3 / day', '✓'],
+  ['API access', '—', '✓', '✓'],
+  ['CLI (MIT)', '✓', '✓', '✓'],
 ];
 
 // CLI vs Pro. Every row below was checked against the CLI source and docs:
@@ -235,7 +201,7 @@ const cliVsProRows = [
   [
     'Schedule',
     'None built in. geo track and geo monitor run once, when you call them. Recurring runs need your own cron or scheduled CI job.',
-    'Weekly for one domain, without a scheduler on your side.',
+    'Weekly for up to 10 domains, without a scheduler on your side.',
   ],
   [
     'Where history lives',
@@ -250,7 +216,7 @@ const cliVsProRows = [
 ] as const;
 
 const cliVsProAnswer =
-  'If you already run the CLI in CI, you may not need Pro. geo track and geo monitor use the same open-source audit engine, store snapshots in a local SQLite file (~/.geo-optimizer/tracking.db), and run only when you start them, so the schedule, the storage and reading the output are yours to set up. Pro is for people who would rather not operate that: the audit runs weekly for one domain, history is kept in your account, and a score drop of 5 points or more triggers an email alert.';
+  'If you already run the CLI in CI, you may not need Pro. geo track and geo monitor use the same open-source audit engine, store snapshots in a local SQLite file (~/.geo-optimizer/tracking.db), and run only when you start them, so the schedule, the storage and reading the output are yours to set up. Pro is for people who would rather not operate that: the audit runs weekly for up to 10 domains, history is kept in your account, and a score drop of 5 points or more triggers an email alert.';
 
 const faqs = [
   {
@@ -279,7 +245,7 @@ const faqs = [
   },
   {
     q: 'What is the founding price?',
-    a: 'The current prices are a founding rate for early members. They are locked for the life of the subscription as long as it stays active. The public list price will be higher later.',
+    a: 'The current prices are a founding rate for early members. They are locked for the life of the subscription as long as it stays active. Pro is $19/month founding, then $29/month; Agency is $89/month founding, then $199/month.',
   },
   {
     q: 'Will the CLI remain open source?',
@@ -287,7 +253,7 @@ const faqs = [
   },
   {
     q: 'Is there a free trial for paid plans?',
-    a: 'There is no time-limited trial. The Free plan is the permanent baseline and returns real audit results without commitment. Paid plans add monitoring and team features on top.',
+    a: 'There is no self-serve trial. The Free plan is the permanent baseline and returns real audit results without commitment. A 14-day Agency trial is available on request: contact us at info@geoready.dev.',
   },
   {
     q: 'Can I cancel at any time?',
@@ -297,15 +263,14 @@ const faqs = [
 
 const heroCadenceRows = [
   { plan: 'Free', value: 'run: on demand', detail: '5 audits/day' },
-  { plan: 'Pro', value: 'schedule: weekly', detail: '1 domain' },
-  { plan: 'Studio', value: 'schedule: daily', detail: '15 domains' },
+  { plan: 'Pro', value: 'schedule: weekly', detail: '10 domains' },
   { plan: 'Agency', value: 'schedule: daily', detail: '50 domains' },
 ] as const;
 ---
 
 <Shell
   title="GeoReady Pricing | Free AI Audit & Monitoring"
-  description="The full 9-category GEO audit is free, no account. Pro adds weekly monitoring, score history, and alerts. Studio and Agency add multi-site daily monitoring."
+  description="The full 9-category GEO audit is free, no account. Pro adds weekly monitoring, score history, and alerts. Agency adds multi-site daily monitoring."
   canonical="https://geoready.dev/pricing/"
 >
   {/* Hero */}
@@ -334,22 +299,18 @@ const heroCadenceRows = [
               </svg>
             </a>
             <span class="text-sm text-ink-mute">
-              No time trial. No card required for Free. Cancel anytime.
+              No card required for Free. 14-day Agency trial on request. Cancel anytime.
             </span>
           </div>
 
-          <div class="mt-8 grid gap-3 sm:grid-cols-3">
+          <div class="mt-8 grid gap-3 sm:grid-cols-2">
             <div class="border-l border-rail pl-4">
               <p class="text-sm font-semibold text-ink">Free</p>
               <p class="mt-1 text-sm text-ink-soft">Single-URL audit, no account.</p>
             </div>
             <div class="border-l border-rail pl-4">
               <p class="text-sm font-semibold text-ink">Pro</p>
-              <p class="mt-1 text-sm text-ink-soft">$19/month founding price.</p>
-            </div>
-            <div class="border-l border-rail pl-4">
-              <p class="text-sm font-semibold text-ink">Studio</p>
-              <p class="mt-1 text-sm text-ink-soft">Multi-site monitoring and exports.</p>
+              <p class="mt-1 text-sm text-ink-soft">$19/month founding price, then $29/month.</p>
             </div>
           </div>
 
@@ -381,11 +342,10 @@ const heroCadenceRows = [
         </aside>
       </div>
 
-      <div class="mt-12 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail md:grid-cols-4">
+      <div class="mt-12 grid gap-px overflow-hidden rounded-[4px] border border-rail bg-rail md:grid-cols-3">
         {[
           ['Free', 'Audit once, learn what to fix.'],
-          ['Pro', 'Track one domain weekly.'],
-          ['Studio', 'Run a portfolio daily.'],
+          ['Pro', 'Track up to 10 domains weekly.'],
           ['Agency', 'Add team and bulk workflows.'],
         ].map(([label, text]) => (
           <div class="bg-white p-5">
@@ -606,7 +566,7 @@ const heroCadenceRows = [
         <p class="mt-3 text-sm leading-relaxed text-ink-soft">
           Pick the plan by the job you need done after the audit, not by feature count. A one-time
           diagnosis stays free. Ongoing monitoring starts with Pro. AI citation
-          tracking and client workflows start with Studio.
+          tracking and client workflows start with Agency.
         </p>
       </div>
 
@@ -854,7 +814,6 @@ const heroCadenceRows = [
               <th class="w-[40%] border-b border-rail px-4 py-3 text-left font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Feature</th>
               <th class="border-b border-rail px-3 py-3 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Free</th>
               <th class="border-b border-rail bg-pass-wash/60 px-3 py-3 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-pass-deep">Pro</th>
-              <th class="border-b border-rail px-3 py-3 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Studio</th>
               <th class="border-b border-rail px-3 py-3 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-mute">Agency</th>
             </tr>
           </thead>
@@ -1012,7 +971,7 @@ const heroCadenceRows = [
       {
         "@type": "WebPage",
         "name": "GeoReady Pricing",
-        "description": "GeoReady pricing: free audit with no account required, Pro monitoring, Studio multi-site, Agency workspace.",
+        "description": "GeoReady pricing: free audit with no account required, Pro monitoring, Agency multi-site and workspace.",
         "url": "https://geoready.dev/pricing/",
         "isPartOf": { "@id": "https://geoready.dev/#website" }
       },
@@ -1047,7 +1006,7 @@ const heroCadenceRows = [
                 "priceCurrency": "USD",
                 "unitCode": "MON"
               },
-              "description": "Weekly monitoring for 1 domain, score history, regression alerts, PDF export, API access.",
+              "description": "Weekly monitoring for up to 10 domains, score history, regression alerts, PDF export, API access.",
               "availability": "https://schema.org/InStock",
               "url": "https://app.geoready.dev/signup?plan=pro"
             }
@@ -1055,25 +1014,6 @@ const heroCadenceRows = [
           {
             "@type": "ListItem",
             "position": 3,
-            "item": {
-              "@type": "Offer",
-              "name": "Studio",
-              "price": "49",
-              "priceCurrency": "USD",
-              "priceSpecification": {
-                "@type": "UnitPriceSpecification",
-                "price": "49",
-                "priceCurrency": "USD",
-                "unitCode": "MON"
-              },
-              "description": "15 domains, daily monitoring, unbranded PDF export, competitor comparison, 12-month history.",
-              "availability": "https://schema.org/InStock",
-              "url": "https://app.geoready.dev/signup?plan=studio"
-            }
-          },
-          {
-            "@type": "ListItem",
-            "position": 4,
             "item": {
               "@type": "Offer",
               "name": "Agency",
@@ -1128,7 +1068,7 @@ const heroCadenceRows = [
           {
             "@type": "Question",
             "name": "What is the founding price?",
-            "acceptedAnswer": { "@type": "Answer", "text": "The current prices are a founding rate for early members. They are locked for the life of the subscription as long as it stays active. The public list price will be higher later." }
+            "acceptedAnswer": { "@type": "Answer", "text": "The current prices are a founding rate for early members. They are locked for the life of the subscription as long as it stays active. Pro is $19/month founding, then $29/month; Agency is $89/month founding, then $199/month." }
           },
           {
             "@type": "Question",
@@ -1138,7 +1078,7 @@ const heroCadenceRows = [
           {
             "@type": "Question",
             "name": "Is there a free trial for paid plans?",
-            "acceptedAnswer": { "@type": "Answer", "text": "There is no time-limited trial. The Free plan is the permanent baseline and returns real audit results without commitment. Paid plans add monitoring and team features on top." }
+            "acceptedAnswer": { "@type": "Answer", "text": "There is no self-serve trial. The Free plan is the permanent baseline and returns real audit results without commitment. A 14-day Agency trial is available on request: contact us at info@geoready.dev." }
           },
           {
             "@type": "Question",
