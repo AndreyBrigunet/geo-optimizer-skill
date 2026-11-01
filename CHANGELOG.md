@@ -7,11 +7,31 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [SemVer](https://semv
 
 ## [Unreleased]
 
-### Fixed (scoring)
-- Brand & Entity: a site typed directly as a LocalBusiness subtype (`RoofingContractor`, `Plumber`, `HVACBusiness`, `Electrician`, `GeneralContractor` and 21 more added to `ORGANIZATION_TYPES`) lost the contact-info point and the geographic-identity point, and got an "Add address, telephone or contactPoint" recommendation it had already met. The geo signal now accepts any Organization subtype with an address. Scores for such sites can rise by up to 2 points.
+## [4.19.9] — 2026-10-30
+
+### Changed
+- User-facing text no longer presents per-method "+N% AI visibility" figures as results of the Princeton GEO paper. Audit findings, CI output and the recommendations text drop the unsourced percentages; the paper reports figures only as relative gains in visibility metrics on its own benchmark, and the per-method values in the docs are labelled as derived from its Table 1 absolute scores. `MethodScore.impact` is documented as a historical, unverified label.
+- The rubric documents state the nine categories of rubric v2 and describe `llms.txt` as agent-facing hygiene. The demo templates (`index`, `manifesto`, `research`) use the same wording.
+- HTML and PDF audit report (`geo audit --format html|pdf`, `/report/{id}`, `/api/audit/pdf`) redrawn in the GeoReady v3 design: light paper page in A4 with the site URL and page numbers in the margin, Stack Sans embedded in the file (OFL 1.1, licence shipped in `cli/report_assets/`), a score ring drawn to the score in the band colour, a summary of key checks and recommendations, numbered recommendations. On screen the report follows the system dark mode and drops the progress column under 640px.
+
+### Fixed
+- PDF report: the status column printed empty boxes, because the ✅/❌ emoji have no font in the web image. Statuses are now the words "Pass" and "Fix".
+- `/report/{id}` and `/api/audit/pdf` rebuilt cached audits without the rubric version, the category maxima and the Google AI checks, so a v2 result was printed against v1 maxima (for example "Content Quality 14/12") and without the Google AI Search row. All three are now restored from the cache.
+
+## [4.19.8] — 2026-10-26
 
 ### Added
 - `geo audit --url <url> --max-pages N`: find the site's sitemap and audit up to N of its pages, reporting the average score (the existing `--sitemap` batch path, without needing the sitemap URL). Optional: the default single-page score does not change. Text or JSON output only; exits 1 when no sitemap is found.
+
+### Changed
+- `geo access`: the heavy-HTML warning now says how much of the weight is inline `<script>`/`<style>`, so a framework page over 200KB with little copy is told where the weight comes from. The threshold moved to `HTML_WEIGHT_WARN_BYTES` in `models/config.py`; its value is unchanged. Reported by Neurounit on Habr.
+- `geo --lang` help said Italian was the default output language. Output is English; the help now says the flag is reserved for localization and goes before the command.
+- `geo audit` text output: sections 12-19 (trust stack, RAG chunk readiness, embedding proximity, content decay, platform citation profile, context window, instruction following, multimodal) now say they are diagnostics outside the 0-100 score. They never counted toward it, but the "Chunk readiness: 0/100" line next to a high total read as a contradiction. No score changes.
+
+### Fixed
+- `boilerplate_ratio` (negative signals) could exceed 1.0 on pages without `<main>`/`<article>`: a `<nav>` inside a `<header>` was counted twice. Only the outermost `nav`/`header`/`footer` region counts now, and the ratio is capped at 1.0. Reported by Neurounit on Habr (tested on 4.18.2).
+- The About-link check (Brand & Entity) recognised only English and Italian slugs, so a German `/ueber-uns` or a French `/a-propos` page failed it. Added German, French, Spanish, Portuguese and Dutch slugs, with their `#` anchors. Reported by Qilano.
+- RAG chunk readiness matched definitions and anchor sentences only in English: the definition opening needed an English verb (`is`, `refers to`...) and both patterns needed an ASCII capital, so Cyrillic and Greek pages and sentences opening with `È` or `Ü` scored lower for the same structure. Definition verbs now cover English, Italian, German, French, Spanish, Portuguese, Dutch and Russian (`— это`, `является`), and capitals cover Latin-1, Greek and Cyrillic. English results are unchanged. Reported by Neurounit on Habr.
 
 ### Security
 - Website dependencies: the frontend lockfile is refreshed on top of 4.19.4 and `overrides` raise `js-yaml` 3.x, `fflate`, `smol-toml`, `uuid` and `postcss-selector-parser` (#623). `npm audit` goes from 29 findings to 14; the rest are `braces` and `sprintf-js` (no patched release, build-time Sanity CLI tooling) and their parents.
@@ -46,6 +66,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [SemVer](https://semv
 - Roadmap (`docs/ROADMAP.md` and the public roadmap page): added the shipped v4.19.3 patch.
 - `TRADEMARKS.md`: a draft name and logo policy for forks and derived products (the MIT licence covers the code, not the names). Linked from the README.
 - README: the GitHub stars badges no longer use the shields.io `github/stars` endpoint, which was returning "Unable to select next GitHub token from pool". The count badge at the top now comes from badgen.net; the call-to-action at the bottom is a static shields.io badge without a number.
+
+## [4.19.7] — 2026-10-24
+
+### Fixed
+- Brand & Entity: a site typed directly as a LocalBusiness subtype (`RoofingContractor`, `Plumber`, `HVACBusiness`, `Electrician`, `GeneralContractor` and 21 more added to `ORGANIZATION_TYPES`) lost the contact-info point and the geographic-identity point, and got an "Add address, telephone or contactPoint" recommendation it had already met. The geo signal now accepts any Organization subtype with an address. Scores for such sites can rise by up to 2 points.
 
 ## [4.19.6] — 2026-10-22
 

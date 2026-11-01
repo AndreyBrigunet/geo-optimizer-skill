@@ -6,6 +6,8 @@
 
 ### The open-source **Answer Engine Optimization (AEO)** & **Generative Engine Optimization (GEO)** toolkit.
 
+**GEO Optimizer** is the open-source engine behind **[GeoReady](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=entity)**, the hosted AI visibility audit at geoready.dev. Run it here from the terminal, or in the browser on geoready.dev.
+
 One command scores any website 0–100 on whether **ChatGPT, Perplexity, Gemini, Claude, and Google AI Overviews** can crawl it, understand it, and cite it — then tells you exactly what to fix.
 
 [![PyPI](https://img.shields.io/pypi/v/geo-optimizer-skill?style=flat-square&color=3b82f6)](https://pypi.org/project/geo-optimizer-skill/)
@@ -180,7 +182,7 @@ Guides for most commands live in [`docs/`](docs/). Provider setup for `geo citat
 The hosted platform runs the same engine on a schedule, so the watching happens without you:
 
 - **Free plan** — audits, your last 5 reports, and one real AI answer check a week (Perplexity).
-- **Pro / Studio / Agency, from $19/mo** — weekly score monitoring, regression alerts, multi-site portfolios, client reporting. [Pricing](https://geoready.dev/pricing/?utm_source=github&utm_medium=readme&utm_campaign=bridge).
+- **Pro / Agency, from $19/mo** — weekly score monitoring, regression alerts, multi-site portfolios, client reporting. [Pricing](https://geoready.dev/pricing/?utm_source=github&utm_medium=readme&utm_campaign=bridge).
 
 [**Create a free account**](https://app.geoready.dev/signup/?utm_source=github&utm_medium=readme&utm_campaign=bridge) · [Free web audit, no account](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=bridge) · [Get the free 160-page GEO Readiness Manual](https://geoready.dev/geo-readiness-manual/?utm_source=github&utm_medium=readme&utm_campaign=bridge)
 
@@ -189,7 +191,7 @@ Same engine everywhere: the platform adds what a local CLI cannot — server-sid
 <details>
 <summary><b>Open source vs hosted — the full comparison</b></summary>
 
-| | GEO Optimizer (this repo) | [geoready.dev](https://geoready.dev) Free | GeoReady Pro / Studio / Agency |
+| | GEO Optimizer (this repo) | [geoready.dev](https://geoready.dev) Free | GeoReady Pro / Agency |
 |---|---|---|---|
 | **Access** | MIT, runs locally | Web audit, no account | [Self-serve sign-up](https://app.geoready.dev/signup/?utm_source=github&utm_medium=readme&utm_campaign=comparison) |
 | **Best for** | Developers, CI/CD, automation | Quick checks, SEO specialists | Ongoing clients, multi-site portfolios |
@@ -279,7 +281,7 @@ Treat AI visibility like test coverage. The GitHub Action scores your site, fail
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.19.6
+- uses: Auriti-Labs/geo-optimizer-skill@v4.19.9
   with:
     url: https://yoursite.com
     min-score: 70        # fail the build below 70
@@ -458,7 +460,7 @@ Yes. *AI Search Engineering: A Technical Guide to Generative Engine Optimization
 
 ## Roadmap
 
-Focused release waves, not noisy patches: 92 releases since February 2026, currently **v4.19.6**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
+Focused release waves, not noisy patches: 95 releases since February 2026, currently **v4.19.9**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
@@ -496,6 +498,6 @@ GEO Optimizer is built and maintained by [Juan Camilo Auriti](https://www.linked
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?style=for-the-badge&logo=GitHub-Sponsors&logoColor=white)](https://github.com/sponsors/auriti)
 [![Free hosted audit](https://img.shields.io/badge/Free_hosted_audit-geoready.dev-0D9488?style=for-the-badge)](https://geoready.dev/?utm_source=github&utm_medium=readme&utm_campaign=footer)
 
-**MIT License** · [Name and logo policy](TRADEMARKS.md)
+**MIT License** · [Name and logo policy](TRADEMARKS.md) · The HTML/PDF report embeds the Stack Sans fonts under the [SIL Open Font License 1.1](src/geo_optimizer/cli/report_assets/OFL.txt)
 
 </div>

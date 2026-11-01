@@ -19,6 +19,8 @@ How the GEO Score (0–100) is computed. Based on the Princeton KDD 2024 researc
 
 The total score is the sum of all points earned across **9 categories**, capped at 100.
 
+A negative-signal penalty is then subtracted: 1 point when one negative signal is found, 3 for two or three, 5 for four or more (keyword stuffing, high boilerplate ratio, missing author, mixed signals and similar; see `NEGATIVE_PENALTY_*` in `models/config.py`). So a page with every category at its maximum still scores below 100 while a negative signal is active. The result is clamped to 0-100. The penalty is reported as `negative_penalty` in the CLI JSON `score_breakdown` and as `score_penalty` in the web API.
+
 ### Rubric versions
 
 Rubric v2 is the default (`score_version: 2`). Use `geo audit --score-version 1` for legacy comparisons; history deltas and regressions should compare snapshots with the same score version.
@@ -50,7 +52,7 @@ Rubric v2 is the default (`score_version: 2`). Use `geo audit --score-version 1`
 | `G-SD-VISIBLE` | 2 | JSON-LD `name` or `headline` appears in visible text; scored in Schema JSON-LD. | https://developers.google.com/search/docs/appearance/structured-data/sd-policies |
 | `G-GENAI-CONTROL` | 0 | Search Console generative-AI opt-out; manual check. | https://developers.google.com/search/docs/fundamentals/ai-optimization-guide |
 
-`llms.txt` is useful to other AI agents but is ignored by Google Search.
+`llms.txt` is ignored by Google Search (Google's own guidance says so). It is scored as agent-facing hygiene for other AI agents, with a small weight (6 points), and has no bearing on Google eligibility.
 
 ### v2 signal breakdown
 
