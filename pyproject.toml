@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "geo-optimizer-skill"
-version = "4.19.9"
+version = "4.19.10"
 description = "GEO Optimizer, the open-source Generative Engine Optimization toolkit behind GeoReady (geoready.dev): audit whether ChatGPT, Perplexity, Claude, Gemini and Google AI Overviews can cite your site"
 readme = "README.md"
 license = {text = "MIT"}
@@ -64,7 +64,9 @@ embedding = [
 ]
 llm = [
     "openai>=1.0.0,<4.0",
-    "anthropic>=0.30.0,<2.0",
+    "anthropic>=0.30.0,<3.0",
+    # 0.13.0 is the first release that works with httpx 0.28 (older ones pass the removed `proxies`)
+    "groq>=0.13.0,<2.0",
 ]
 dev = [
     "pytest>=7.0,<10.0",

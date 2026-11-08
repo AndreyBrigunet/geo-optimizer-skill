@@ -281,7 +281,7 @@ Treat AI visibility like test coverage. The GitHub Action scores your site, fail
 
 ```yaml
 # .github/workflows/geo.yml
-- uses: Auriti-Labs/geo-optimizer-skill@v4.19.9
+- uses: Auriti-Labs/geo-optimizer-skill@v4.19.10
   with:
     url: https://yoursite.com
     min-score: 70        # fail the build below 70
@@ -304,6 +304,17 @@ claude mcp add geo-optimizer -- geo-mcp
 ```
 
 Then ask: *"audit my site and fix what's missing."*
+
+#### Claude Code plugin
+
+Installs the skill and the MCP server in one go, no files to copy:
+
+```text
+/plugin marketplace add Auriti-Labs/geo-optimizer-skill
+/plugin install geo-optimizer@geoready
+```
+
+On Claude Code 2.1.275 or later one step is enough: `/plugin install geo-optimizer --marketplace Auriti-Labs/geo-optimizer-skill` (the shell form, `claude plugin install ...`, needs 2.1.292). The plugin starts `geo-mcp` with `uvx`, so [uv](https://docs.astral.sh/uv/) must be on your `PATH`. It does not install the `geo` CLI the skill runs: the skill's preflight asks for it.
 
 <details>
 <summary><b>12 MCP tools</b></summary>
@@ -460,7 +471,7 @@ Yes. *AI Search Engineering: A Technical Guide to Generative Engine Optimization
 
 ## Roadmap
 
-Focused release waves, not noisy patches: 95 releases since February 2026, currently **v4.19.9**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
+Focused release waves, not noisy patches: 96 releases since February 2026, currently **v4.19.10**. Next up is the v5.0 cycle — signal architecture, retrieval surface analysis, and scoring recalibration. Calendar and direction: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 

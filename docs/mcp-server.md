@@ -26,6 +26,8 @@ claude mcp add geo-optimizer -- geo-mcp
 
 That's it. The tools are immediately available in your Claude Code session.
 
+To get the server and the skill together without installing the package, use the [Claude Code plugin](../README.md#claude-code-plugin) (needs `uv`).
+
 ### Cursor
 
 Add to your `.cursor/mcp.json`:
@@ -300,7 +302,7 @@ Check which AI bots can access a website via robots.txt. Returns per-bot status 
   "citation_bots_ok": true,
   "bots": {
     "OAI-SearchBot": { "description": "OpenAI (ChatGPT search citations)", "status": "allowed", "tier": "search" },
-    "ClaudeBot": { "description": "Anthropic (Claude citations)", "status": "allowed", "tier": "search" },
+    "Claude-SearchBot": { "description": "Anthropic (Claude search citations)", "status": "allowed", "tier": "search" },
     "GPTBot": { "description": "OpenAI (ChatGPT training)", "status": "blocked", "tier": "training" }
   },
   "summary": { "allowed": 20, "blocked": 2, "missing": 2 }

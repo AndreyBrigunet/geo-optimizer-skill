@@ -7,6 +7,32 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · [SemVer](https://semv
 
 ## [Unreleased]
 
+### Added
+- MCP server: `geo_audit` accepts an optional `include_receipt: bool = False` flag to attach per-stage execution observability (`stages_completed`, `stages_failed`, `duration_ms`, `terminal_error`) to the returned JSON envelope without affecting the underlying retry policy or HTTP limits (#557, #685). A stage is reported as failed when the audit raises or when it stops early on an unreachable homepage or an HTTP error. Default output is unchanged.
+- Claude Code plugin and marketplace: `/plugin marketplace add Auriti-Labs/geo-optimizer-skill`, then `/plugin install geo-optimizer@geoready`. The plugin (`plugins/geo-optimizer/`) ships the GEO Optimizer skill and starts the `geo-mcp` server through `uvx` (needs uv); it does not install the `geo` CLI.
+- `scripts/build_ai_context.py` generates the preflight and agent-rules block of the six `ai-context/` files from SKILL.md, and keeps the plugin's copy of SKILL.md, its `plugin.json` version and its `.mcp.json` minimum version in sync; `--check` reports stale files and a test fails on drift.
+
+### Changed
+- `SECURITY.md`: reports go to juan@geoready.dev or to GitHub's private vulnerability reporting (Security tab, Report a vulnerability), which is now enabled. The previous address did not exist (#691).
+
+### Fixed
+- `geo fix`: the generated `schema-faqpage.jsonld` was hardcoded in Italian ("Cos'è …?", "Come contattare …?") and pointed to a guessed `/contatti` URL on every site. It now uses the same English example Q&A as `/ai/faq.json`, with a contact answer that links the homepage instead of inventing a path. `/ai/summary.json` gets the generation date in `lastModified` instead of the literal `{{ISO_DATE}}` placeholder.
+
+## [4.19.10] — 2026-11-03
+
+### Changed
+- `SKILL.md` now opens with a fail-closed `geo --version` preflight, install commands per extra, a table of network targets, API keys and disk writes for each command, and four rules for agents (#688). `capabilities.json` carries the same facts in machine-readable form, and a test fails if a CLI command or MCP tool is added without updating it.
+- Bot documentation: ClaudeBot and Google-Extended are no longer described as citation bots in the six `ai-context/` files, `references/ai-bots-list.md` and the copies of `ai-bots-reference.md`. They follow the search, training and user-fetch tiers that `SKILL.md` and `models/config.py` already used; being allowed means eligible, never a guarantee of citation. Bots that `config.py` does not list were dropped, and a test pins the tiers (#689).
+
+### Fixed
+- Web demo / API: the root static mount (`/`) is now optional when `GEO_STATIC_DIR` does not exist on disk, avoiding an unhandled `RuntimeError` at startup/import when running as a headless API service (#682). An informative JSON response is served at `/` (HTTP 200) with links to `/docs` and `/health`.
+- SQLite connection management: `HistoryStore`, `SnapshotStore` and `TelemetryStore` now manage SQLite connections with `@contextmanager`, properly closing handles upon exiting the transaction block. This prevents file locking (`WinError 32`) on Windows and leaks during repeated store instantiations.
+- Test suite cross-platform compatibility: `test_telemetry` uses pytest's `tmp_path` fixture; `test_perception_cmd` reads text with `encoding="utf-8"`; `test_rich_formatter` accepts standard box corners on Windows consoles; `test_report_v3` gracefully skips PDF generation when native WeasyPrint C libraries (`libgobject-2.0-0`) are missing.
+- Web demo: a self-hosted `geo-web` no longer contacts an external stats service unless `GEO_STATS_API_URL` is set. The variable used to default to a third-party URL, so `/api/stats` sent a GET there even with no configuration; the audit counter now stays at 0 until the variable is set.
+- `geo audit --no-plugins` had no effect: the audit core loaded and ran every installed `geo_optimizer.checks` plugin regardless. The flag now reaches the audit (single URL, `--sitemap` and `--max-pages`), which then neither loads nor runs plugins. API and MCP callers still load them by default.
+- The Groq provider imports the `groq` SDK, which no extra declared. `groq>=0.13.0,<2.0` is now part of `[llm]`, and the missing-SDK message points at `[llm]` instead of `[dev]`.
+- CDN AI crawler check: the browser and bot requests downloaded the whole homepage before the 5 MB size check (and the bot requests had no check). They now stream the body and stop reading once it passes 5 MB.
+
 ## [4.19.9] — 2026-10-30
 
 ### Changed
